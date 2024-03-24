@@ -9,6 +9,8 @@ type AccountInformationInputProps = {
   id: string;
   fieldName: "email" | "firstName" | "lastName" | "phoneNumber";
   editable?: boolean;
+  setNeedsUpdate: React.Dispatch<React.SetStateAction<boolean>>;
+  setData?: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const AccountInformationInput = ({
@@ -17,9 +19,12 @@ const AccountInformationInput = ({
   id,
   fieldName,
   editable = false,
+  setNeedsUpdate,
+  setData,
 }: AccountInformationInputProps) => {
-  const [value, setValue] = useState(data);
+  const [value, setValue] = useState(data || "");
   const [isEditing, setIsEditing] = useState(false);
+  const [prev, setPrev] = useState<string | undefined>(data || "");
 
   const getValue = () => {
     switch (fieldName) {
@@ -39,13 +44,14 @@ const AccountInformationInput = ({
   useEffect(() => {
     if (user) {
       setValue(getValue());
+      setPrev(getValue());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return (
     <div
-      className={`relative flex items-center justify-between bg-lightPrimary pr-2 rounded-md w-[17rem] text-xl ${
+      className={`relative flex items-center justify-between bg-lightPrimary pr-2 rounded-md w-[20rem] text-xl ${
         !user ? "animate-pulse" : ""
       }`}
     >
@@ -53,12 +59,15 @@ const AccountInformationInput = ({
         id={id}
         type="text"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value);
+        }}
         className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none `}
         disabled={!isEditing}
         autoComplete="off"
       />
       {editable &&
+        setData &&
         (!isEditing ? (
           <MdEdit
             onClick={() => setIsEditing(true)}
@@ -66,7 +75,11 @@ const AccountInformationInput = ({
           />
         ) : (
           <IoIosCloseCircle
-            onClick={() => setIsEditing(false)}
+            onClick={() => {
+              setIsEditing(false);
+              setNeedsUpdate(prev?.toLowerCase() !== value?.toLowerCase());
+              setData(value);
+            }}
             className="w-5 h-5 text-darkPrimary cursor-pointer"
           />
         ))}

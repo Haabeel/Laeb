@@ -15,10 +15,11 @@ import {
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { auth, db } from "../../../../../firebase.config";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Toaster, toast } from "sonner";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import Cookies from "js-cookie";
+import { formatPhoneVerificationError } from "@/lib/utils";
 const MobileVerification = () => {
   const [user, setUser] = useState<User | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -27,7 +28,7 @@ const MobileVerification = () => {
   const [otp, SetOtp] = useState("");
   const router = useRouter();
   const [verificationID, setVerificationID] = useState<string | null>(null);
-
+  const [isProvider, setIsProvider] = useState(false);
   const sendOTP = async () => {
     if (user !== null) {
       try {
@@ -35,23 +36,26 @@ const MobileVerification = () => {
           size: "invisible",
         });
         const provider = new PhoneAuthProvider(auth);
-        await provider.verifyPhoneNumber(phoneNumber, recaptcha).then((res) => {
-          setIsLoading(true);
-          setVerificationID(res);
-          setResendTimer(60); // Start resend timer for 1 minute
-          let prev: number;
-          const resendInterval = setInterval(() => {
-            setResendTimer((prevValue) => {
-              const newValue = Math.max(0, prevValue - 1);
-              prev = newValue;
-              return newValue;
-            });
+        await provider
+          .verifyPhoneNumber("+971" + phoneNumber, recaptcha)
+          .then((res) => {
+            setIsLoading(true);
+            setVerificationID(res);
+            setResendTimer(60); // Start resend timer for 1 minute
+            let prev: number;
+            const resendInterval = setInterval(() => {
+              setResendTimer((prevValue) => {
+                const newValue = Math.max(0, prevValue - 1);
+                prev = newValue;
+                return newValue;
+              });
 
-            if (prev === 0) {
-              clearInterval(resendInterval);
-            }
-          }, 1000);
-        });
+              if (prev === 0) {
+                clearInterval(resendInterval);
+              }
+            }, 1000);
+          })
+          .catch((error) => toast.error(formatPhoneVerificationError(error)));
         toast.success("OTP sent!");
       } catch (error) {
         toast.error("Something went wrong, please try again");
@@ -62,7 +66,7 @@ const MobileVerification = () => {
   };
 
   const verifyOTP = async () => {
-    toast.dismiss("Verifying");
+    toast.info("Verifying");
     if (user !== null && verificationID !== null) {
       if (otp.length != 6) return toast.error("invalid otp");
       try {
@@ -71,13 +75,17 @@ const MobileVerification = () => {
           otp
         );
         linkWithCredential(user!!, phoneCredential)
-          .then(() => {
+          .then(async () => {
+            const docRef = doc(db, "users", user.uid);
+            await updateDoc(docRef, {
+              phoneNumber: "+971" + phoneNumber,
+            });
             Cookies.set("hasPhoneVerified", "true");
             router.push("/dashboard");
           })
-          .catch(() => toast.error("Something went wrong, please try again"));
+          .catch((error) => toast.error(formatPhoneVerificationError(error)));
       } catch (error) {
-        toast.error("Something went wrong, please try again");
+        toast.error("Something went wrong.");
       }
     } else {
       toast.error("Something went wrong, please try again");
@@ -89,8 +97,10 @@ const MobileVerification = () => {
       if (mUser) {
         const docRef = doc(db, "users", mUser.uid);
         const docSnapshot = await getDoc(docRef);
-        if (docSnapshot.exists())
-          setPhoneNumber(docSnapshot.data().phoneNumber);
+        if (docSnapshot.exists()) {
+          setPhoneNumber(docSnapshot.data().phoneNumber || "");
+          setIsProvider(docSnapshot.data().phoneNumber == null ? false : true);
+        }
         setUser(mUser);
       }
     });
@@ -106,13 +116,24 @@ const MobileVerification = () => {
         <p className={`text-darkPrimary text-md`}>
           Verify your mobile number to continue
         </p>
-        <p
-          className={`bg-lightAccent text-darkPrimary text-md rounded-lg px-2 py-3 self-stretch h-12 ${
-            phoneNumber == "" ? "animate-pulse" : ""
+        <div
+          className={`flex items-center text-darkPrimary text-md pl-2 rounded-lg bg-lightAccent w-full h-12 ${
+            user == null ? "animate-pulse" : ""
           }`}
         >
-          {phoneNumber}
-        </p>
+          <p className="text-md h-full text-center flex items-center justify-center">
+            +971
+          </p>
+          <input
+            type="tel"
+            disabled={isProvider}
+            maxLength={9}
+            placeholder={!isProvider ? "Enter your Phone number" : ""}
+            className={`bg-lightAccent placeholder:text-darkPrimary text-darkPrimary outline-none focus:outline-none rounded-r-lg px-2 py-3 self-stretch h-full`}
+            value={!isProvider ? phoneNumber : phoneNumber.substring(4)}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+          />
+        </div>
         <button
           className={`px-3 py-2 rounded-md bg-lightSecondary text-[#FFFFFF] flex justify-center items-center gap-2 w-full ${
             isLoading || resendTimer ? "cursor-not-allowed opacity-50" : ""

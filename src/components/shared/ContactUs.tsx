@@ -8,6 +8,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { ROUTES_SEND_EMAIL } from "../../../routes";
 
 const formSchema = z.object({
   name: z
@@ -81,7 +82,7 @@ const ContactUsForm = () => {
       if (result.success) {
         try {
           setIsLoading(true);
-          const response = await fetch("/api/send", {
+          const response = await fetch(ROUTES_SEND_EMAIL, {
             method: "POST",
             body: JSON.stringify(getValues()),
           }).then(() => {

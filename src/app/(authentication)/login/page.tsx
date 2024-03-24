@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 
 import Cookies from "js-cookie";
-import { auth } from "../../../../firebase.config";
+import { auth, db } from "../../../../firebase.config";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Bebas_Neue } from "next/font/google";
@@ -14,10 +14,16 @@ import { FcGoogle } from "react-icons/fc";
 import { FaFacebookSquare } from "react-icons/fa";
 import { FaApple } from "react-icons/fa6";
 import Link from "next/link";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+} from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import { Toaster, toast } from "sonner";
 import { cookies } from "next/headers";
+import { setUpCookies } from "@/lib/utils";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 const bebasNeue = Bebas_Neue({
   weight: "400",
   subsets: ["latin"],
@@ -76,7 +82,49 @@ const Login = () => {
         toast.error("An error occurred during login. Please try again later.");
     }
   };
+  const handleGoogleSignIn = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const signInResult = await signInWithPopup(auth, provider);
 
+      if (signInResult.user) {
+        const user = signInResult.user;
+        const userId = user.uid;
+
+        const userDocRef = doc(db, "users", userId);
+        const userDocSnapshot = await getDoc(userDocRef);
+
+        if (userDocSnapshot.exists()) {
+          // User document exists, proceed with sign in
+          setUpCookies(signInResult);
+          router.push("/dashboard");
+        } else {
+          // User document doesn't exist, create a new one
+          const userData = {
+            firstName: user.displayName?.split(" ")[0] || "",
+            lastName: user.displayName?.split(" ")[1] || "",
+            email: user.email || "",
+            phoneNumber: null,
+            emailSubscription: false,
+            preferredEmirate: null,
+            preferredDistrict: null,
+          };
+
+          await setDoc(userDocRef, userData);
+
+          setUpCookies(signInResult);
+          router.push("/dashboard");
+        }
+      } else {
+        // Handle error if user is null
+        console.error("User is null");
+        toast.error("Sign in failed. Please try again.");
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "An error occurred. Please try again.");
+    }
+  };
   const onSumbit: SubmitHandler<LoginFormFields> = async (data) => {
     try {
       const validationCheck = loginFormSchema.safeParse(data);
@@ -85,11 +133,7 @@ const Login = () => {
           setIsLoading(true);
           signInWithEmailAndPassword(auth, data.email, data.password)
             .then((res) => {
-              Cookies.set("isAuth", "true");
-              const hasEmailVerified = res.user.emailVerified;
-              const hasPhoneVerified = res.user.phoneNumber;
-              if (hasEmailVerified) Cookies.set("hasEmailVerified", "true");
-              if (hasPhoneVerified) Cookies.set("hasPhoneVerified", "true");
+              setUpCookies(res);
               router.push("/dashboard");
               setIsLoading(false);
             })
@@ -166,6 +210,7 @@ const Login = () => {
           <button
             className={`flex gap-2 py-2 px-3 rounded-lg bg-[#FFFFFF] items-center justify-start`}
             type="button"
+            onClick={() => handleGoogleSignIn()}
           >
             <FcGoogle className={`h-5 w-5`} />
             <p className={`text-sm text-[#000000] font-semibold`}>

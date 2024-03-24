@@ -65,6 +65,9 @@ const RegistrationForm = () => {
                       firstName: data.firstName,
                       lastName: data.lastName,
                       phoneNumber: "+971" + data.phoneNumber,
+                      emailSubscription: false,
+                      preferredEmirate: null,
+                      preferredDistrict: null,
                     })
                       .then(() => {
                         Cookies.set("isAuth", "true");

@@ -5,3 +5,7 @@
 .bookings-container::-webkit-scrollbar {
   display: none; /* Hide the scrollbar */
 }
+
+.dropdown-container::-webkit-scrollbar {
+  display: none; /* Hide the scrollbar */
+}

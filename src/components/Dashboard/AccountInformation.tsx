@@ -1,25 +1,68 @@
-import { User, onAuthStateChanged, signOut } from "firebase/auth";
+import {
+  User,
+  onAuthStateChanged,
+  signOut,
+  updateProfile,
+} from "firebase/auth";
 import React, { ReactNode, useEffect, useState } from "react";
-import { auth } from "../../../firebase.config";
+import { auth, db } from "../../../firebase.config";
 import { MdEdit } from "react-icons/md";
 import { IoIosCloseCircle } from "react-icons/io";
 import AccountInformationInput from "../shared/AccountInformationInput";
 import DashboardNav from "./DashboardNav";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { removeCookies } from "@/lib/utils";
+import { Toaster, toast } from "sonner";
+import { doc, updateDoc } from "firebase/firestore";
+import { AiOutlineLoading } from "react-icons/ai";
 
 const bookingsTab = ["Upcoming Bookings", "Past Bookings"];
 const AccountInformation = () => {
   const [user, setUser] = useState<User | null>(null);
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
+  const [needsUpdate, setNeedsUpdate] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const handleEditClick = () => {
-    setIsEditing(!isEditing);
+
+  const updateUserProfile = async () => {
+    if (firstName.length < 3) {
+      return toast.error("First name should be more than 3 characters", {
+        duration: 1500,
+      });
+    }
+    updateProfile(user!!, { displayName: firstName + " " + lastName })
+      .then(async () => {
+        setIsLoading(true);
+        setUser((prevUser) => {
+          if (prevUser) {
+            return {
+              ...prevUser,
+              displayName: firstName + " " + lastName,
+            };
+          }
+          return prevUser;
+        });
+        const userDocRef = doc(db, "users", user!!.uid);
+        try {
+          await updateDoc(userDocRef, {
+            firstName: firstName,
+            lastName: lastName,
+          }).then(() => {
+            toast.success("Profile updated successfully.");
+            setIsLoading(false);
+          });
+        } catch (error: any) {
+          toast.error("Something went wrong");
+        }
+        setNeedsUpdate(false);
+      })
+      .catch((error: any) => toast.error("Something went wrong"));
   };
+
   useEffect(() => {
-    onAuthStateChanged(auth, (mUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (mUser) => {
       if (mUser) {
         setUser(mUser);
         if (mUser.displayName) {
@@ -28,12 +71,13 @@ const AccountInformation = () => {
         }
       }
     });
+    return () => unsubscribe();
   }, []);
   return (
-    <main className="flex justify-center items-start w-full h-full gap-20">
+    <main className="flex justify-center items-start w-full h-full gap-20 relative">
       <section className="flex flex-col gap-5 justify-center items-center">
         <H2>Your Profile</H2>
-        <section className="flex gap-4 w-[26rem] justify-between items-center">
+        <section className="flex gap-4 w-full justify-between items-center">
           <label htmlFor="FirstName" className="text-white text-xl text-medium">
             First Name
           </label>
@@ -42,9 +86,11 @@ const AccountInformation = () => {
             fieldName="firstName"
             user={user!!}
             editable
+            setData={setFirstName}
+            setNeedsUpdate={setNeedsUpdate}
           />
         </section>
-        <section className="flex gap-4 w-[26rem] justify-between items-center">
+        <section className="flex gap-4 w-full justify-between items-center">
           <label htmlFor="LastName" className="text-white text-xl text-medium">
             Last Name
           </label>
@@ -53,15 +99,22 @@ const AccountInformation = () => {
             fieldName="lastName"
             user={user!!}
             editable
+            setData={setLastName}
+            setNeedsUpdate={setNeedsUpdate}
           />
         </section>
-        <section className="flex gap-4 justify-between w-[26rem] items-center">
+        <section className="flex gap-4 justify-between w-full items-center">
           <label htmlFor="email" className="text-white text-xl text-medium">
             Email
           </label>
-          <AccountInformationInput id="email" fieldName="email" user={user!!} />
+          <AccountInformationInput
+            id="email"
+            fieldName="email"
+            user={user!!}
+            setNeedsUpdate={setNeedsUpdate}
+          />
         </section>
-        <section className="flex gap-4 justify-between w-[26rem] items-center">
+        <section className="flex gap-4 justify-between w-full items-center">
           <label
             htmlFor="phoneNumber"
             className="text-white text-xl text-medium"
@@ -72,15 +125,29 @@ const AccountInformation = () => {
             id="phoneNumber"
             fieldName="phoneNumber"
             user={user!!}
+            setNeedsUpdate={setNeedsUpdate}
           />
         </section>
+        {needsUpdate && (
+          <button
+            className={`px-3 py-2 rounded-md bg-lightAccent text-darkPrimary flex justify-center items-center gap-2 w-full`}
+            onClick={() => updateUserProfile()}
+          >
+            {!isLoading ? (
+              "Update Profile"
+            ) : (
+              <>
+                <p>Updating...</p>
+                <AiOutlineLoading className="animate-spin" />
+              </>
+            )}
+          </button>
+        )}
         <button
           className={`px-3 py-2 rounded-md bg-lightAccent text-darkPrimary flex justify-center items-center gap-2 w-full`}
           onClick={() => {
             signOut(auth);
-            Cookies.remove("isAuth");
-            Cookies.remove("hasEmailVerified");
-            Cookies.remove("hasPhoneVerified");
+            removeCookies();
             router.push("/");
           }}
         >
@@ -88,6 +155,7 @@ const AccountInformation = () => {
         </button>
       </section>
       <Bookings />
+      <Toaster className="fixed" richColors />
     </main>
   );
 };
