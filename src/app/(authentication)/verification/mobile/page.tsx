@@ -13,9 +13,17 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { auth, db } from "../../../../../firebase.config";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { Toaster, toast } from "sonner";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import Cookies from "js-cookie";
@@ -30,6 +38,18 @@ const MobileVerification = () => {
   const [verificationID, setVerificationID] = useState<string | null>(null);
   const [isProvider, setIsProvider] = useState(false);
   const sendOTP = async () => {
+    if (phoneNumber.length !== 9) {
+      return toast.error("Invalid phone number");
+    }
+    const usersRef = collection(db, "users");
+    const usersQuery = query(
+      usersRef,
+      where("phoneNumber", "==", "+971" + phoneNumber)
+    );
+    const usersSnapshot = await getDocs(usersQuery);
+    if (!usersSnapshot.empty) {
+      return toast.error("Phone number already in use");
+    }
     if (user !== null) {
       try {
         const recaptcha = new RecaptchaVerifier(auth, "recaptcha", {
@@ -55,9 +75,12 @@ const MobileVerification = () => {
               }
             }, 1000);
           })
-          .catch((error) => toast.error(formatPhoneVerificationError(error)));
+          .catch((error) => {
+            toast.error(formatPhoneVerificationError(error));
+          });
         toast.success("OTP sent!");
       } catch (error) {
+        console.error(error);
         toast.error("Something went wrong, please try again");
       } finally {
         setIsLoading(false); // Set loading state to false after all actions
@@ -98,13 +121,17 @@ const MobileVerification = () => {
         const docRef = doc(db, "users", mUser.uid);
         const docSnapshot = await getDoc(docRef);
         if (docSnapshot.exists()) {
-          setPhoneNumber(docSnapshot.data().phoneNumber || "");
           setIsProvider(docSnapshot.data().phoneNumber == null ? false : true);
+          setPhoneNumber(
+            docSnapshot.data().phoneNumber
+              ? docSnapshot.data().phoneNumber.slice(3)
+              : ""
+          );
         }
         setUser(mUser);
       }
     });
-  }, [router]);
+  }, [isProvider, router]);
 
   return (
     <div
@@ -130,7 +157,7 @@ const MobileVerification = () => {
             maxLength={9}
             placeholder={!isProvider ? "Enter your Phone number" : ""}
             className={`bg-lightAccent placeholder:text-darkPrimary text-darkPrimary outline-none focus:outline-none rounded-r-lg px-2 py-3 self-stretch h-full`}
-            value={!isProvider ? phoneNumber : phoneNumber.substring(4)}
+            value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
           />
         </div>

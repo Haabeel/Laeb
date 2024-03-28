@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import {
   ROUTES_DASHBOARD,
+  ROUTES_DASHBOARD_CHANGE_EMAIL,
   ROUTES_LOGIN,
   ROUTES_REGISTER,
   ROUTES_VERIFICATION_EMAIL,
@@ -88,6 +89,14 @@ export function middleware(request: NextRequest) {
           return NextResponse.redirect(redirectUrl);
         }
       }
+    }
+  }
+
+  if (url === ROUTES_DASHBOARD_CHANGE_EMAIL) {
+    const isAuth = isAuthenticated(request);
+    if (!isAuth) {
+      const redirectUrl = new URL(ROUTES_LOGIN, request.url);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 }

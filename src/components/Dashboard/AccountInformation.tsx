@@ -84,7 +84,7 @@ const AccountInformation = () => {
           <AccountInformationInput
             id="firstName"
             fieldName="firstName"
-            user={user!!}
+            user={user}
             editable
             setData={setFirstName}
             setNeedsUpdate={setNeedsUpdate}

@@ -4,12 +4,12 @@ import { IoIosCloseCircle } from "react-icons/io";
 import { MdEdit } from "react-icons/md";
 
 type AccountInformationInputProps = {
-  user: User;
+  user: User | null;
   data?: string;
   id: string;
-  fieldName: "email" | "firstName" | "lastName" | "phoneNumber";
+  fieldName: "email" | "firstName" | "lastName" | "phoneNumber" | "password";
   editable?: boolean;
-  setNeedsUpdate: React.Dispatch<React.SetStateAction<boolean>>;
+  setNeedsUpdate?: React.Dispatch<React.SetStateAction<boolean>>;
   setData?: React.Dispatch<React.SetStateAction<string>>;
 };
 
@@ -27,23 +27,27 @@ const AccountInformationInput = ({
   const [prev, setPrev] = useState<string | undefined>(data || "");
 
   const getValue = () => {
-    switch (fieldName) {
-      case "lastName":
-        return user.displayName?.split(" ")[1] || "";
-      case "email":
-        return user.email || "";
-      case "firstName":
-        return user.displayName?.split(" ")[0] || "";
-      case "phoneNumber":
-        return user.phoneNumber ? user.phoneNumber : "";
-      default:
-        return ""; // Handle unknown fields gracefully
+    if (user) {
+      switch (fieldName) {
+        case "lastName":
+          return user.displayName?.split(" ")[1] || "";
+        case "email":
+          return user.email || "";
+        case "firstName":
+          return user.displayName?.split(" ")[0] || "";
+        case "phoneNumber":
+          return user.phoneNumber ? user.phoneNumber : "";
+        case "password":
+          return "********";
+        default:
+          return ""; // Handle unknown fields gracefully
+      }
     }
   };
 
   useEffect(() => {
     if (user) {
-      setValue(getValue());
+      setValue(getValue()!!);
       setPrev(getValue());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,7 +81,8 @@ const AccountInformationInput = ({
           <IoIosCloseCircle
             onClick={() => {
               setIsEditing(false);
-              setNeedsUpdate(prev?.toLowerCase() !== value?.toLowerCase());
+              if (setNeedsUpdate)
+                setNeedsUpdate(prev?.toLowerCase() !== value?.toLowerCase());
               setData(value);
             }}
             className="w-5 h-5 text-darkPrimary cursor-pointer"

@@ -15,7 +15,9 @@ import { FaFacebookSquare } from "react-icons/fa";
 import { FaApple } from "react-icons/fa6";
 import Link from "next/link";
 import {
+  FacebookAuthProvider,
   GoogleAuthProvider,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
 } from "firebase/auth";
@@ -23,7 +25,15 @@ import { FirebaseError } from "firebase/app";
 import { Toaster, toast } from "sonner";
 import { cookies } from "next/headers";
 import { setUpCookies } from "@/lib/utils";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 const bebasNeue = Bebas_Neue({
   weight: "400",
   subsets: ["latin"],
@@ -125,25 +135,104 @@ const Login = () => {
       toast.error(error.message || "An error occurred. Please try again.");
     }
   };
+  const handleFacebookSignIn = async () => {
+    try {
+      const provider = new FacebookAuthProvider();
+      const signInResult = await signInWithPopup(auth, provider);
+      if (signInResult.user) {
+        const user = signInResult.user;
+        const userId = user.uid;
+
+        const userDocRef = doc(db, "users", userId);
+        const userDocSnapshot = await getDoc(userDocRef);
+
+        if (userDocSnapshot.exists()) {
+          // User document exists, proceed with sign in
+          setUpCookies(signInResult);
+          router.push("/dashboard");
+        } else {
+          // User document doesn't exist, create a new one
+          const userData = {
+            firstName: user.displayName?.split(" ")[0] || "",
+            lastName: user.displayName?.split(" ")[1] || "",
+            email: user.email || "",
+            phoneNumber: null,
+            emailSubscription: false,
+            preferredEmirate: null,
+            preferredDistrict: null,
+          };
+
+          await setDoc(userDocRef, userData);
+
+          setUpCookies(signInResult);
+          router.push("/dashboard");
+        }
+      } else {
+        // Handle error if user is null
+        console.error("User is null");
+        toast.error("Sign in failed. Please try again.");
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again.");
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    const email = getValues("email");
+    const validationCheck = loginFormSchema.safeParse({ email });
+    if (!validationCheck.success) {
+      toast.error("Invalid email address. Please enter a valid email format.");
+      return;
+    }
+    try {
+      const usersRef = collection(db, "users");
+      const docQuery = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(docQuery);
+      if (querySnapshot.empty) {
+        toast.error(
+          "No user found with this email address. Please check your email address and try again."
+        );
+        return;
+      }
+      await sendPasswordResetEmail(auth, email);
+      toast.success("Password reset email sent. Please check your inbox.");
+    } catch (error) {
+      toast.error("An error occurred. Please try again.");
+    }
+  };
+
   const onSumbit: SubmitHandler<LoginFormFields> = async (data) => {
     try {
       const validationCheck = loginFormSchema.safeParse(data);
       if (validationCheck.success) {
         try {
           setIsLoading(true);
-          signInWithEmailAndPassword(auth, data.email, data.password)
-            .then((res) => {
-              setUpCookies(res);
-              router.push("/dashboard");
-              setIsLoading(false);
-            })
-            .catch((error: FirebaseError) => {
-              console.log(error);
-              handleLoginError(error);
-              setIsLoading(false);
-            });
+          const email = getValues("email");
+          const usersRef = collection(db, "users");
+          const docQuery = query(usersRef, where("email", "==", email));
+          const querySnapshot = await getDocs(docQuery);
+          if (querySnapshot.empty) {
+            toast.error(
+              "No user found with this email address. Please check your email address and try again."
+            );
+            setIsLoading(false);
+            return;
+          } else {
+            await signInWithEmailAndPassword(auth, data.email, data.password)
+              .then((res) => {
+                setUpCookies(res);
+                router.push("/dashboard");
+                setIsLoading(false);
+              })
+              .catch((error: FirebaseError) => {
+                console.log(error);
+                handleLoginError(error);
+                setIsLoading(false);
+              });
+          }
         } catch (error) {
           toast.error("An unexpected error occurred. Please try again later.");
+          setIsLoading(false);
           console.log(error);
         }
       }
@@ -194,6 +283,13 @@ const Login = () => {
           />
         </section>
         <button
+          className="text-black text-sm underline self-start"
+          type="button"
+          onClick={() => handleForgotPassword()}
+        >
+          Forgot your password?
+        </button>
+        <button
           className={`px-3 py-2 rounded-md bg-lightSecondary text-[#FFFFFF] flex justify-center items-center gap-2 w-full`}
           type="submit"
         >
@@ -220,6 +316,7 @@ const Login = () => {
           <button
             className={`flex gap-2 py-2 px-3 rounded-lg bg-[#FFFFFF] items-center justify-start`}
             type="button"
+            onClick={() => handleFacebookSignIn()}
           >
             <FaFacebookSquare className={`h-5 w-5 text-[#0000AA]`} />
             <p className={`text-sm text-[#000000] font-semibold`}>
