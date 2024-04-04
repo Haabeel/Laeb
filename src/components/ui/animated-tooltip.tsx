@@ -14,15 +14,18 @@ import { FaUnlink } from "react-icons/fa";
 import { Provider } from "@/types";
 import { User } from "firebase/auth";
 import { handleLinkOrUnlink } from "@/lib/utils";
+import { cn } from "@/utility";
 
 export const AnimatedTooltip = ({
   items,
   user,
   setProviders,
+  className,
 }: {
   items: Provider[];
   user: User;
   setProviders: React.Dispatch<React.SetStateAction<Provider[]>>;
+  className?: string;
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const springConfig = { stiffness: 100, damping: 5 };
@@ -46,7 +49,7 @@ export const AnimatedTooltip = ({
     <>
       {items.map((item, idx) => (
         <div
-          className="relative group"
+          className="relative w-full group"
           key={item.provider}
           onMouseEnter={() => setHoveredIndex(item.id)}
           onMouseLeave={() => setHoveredIndex(null)}
@@ -71,7 +74,10 @@ export const AnimatedTooltip = ({
                   rotate: rotate,
                   whiteSpace: "nowrap",
                 }}
-                className="absolute -left-1/3 translate-x-1/2 flex text-xs flex-col items-center justify-center rounded-md bg-lightAccent z-50 shadow-xl px-4 py-2"
+                className={cn(
+                  "absolute -left-1/3 translate-x-1/2 flex text-xs flex-col items-center justify-center rounded-md bg-lightAccent z-50 shadow-xl px-4 py-2",
+                  className
+                )}
               >
                 <div className="font-bold text-darkPrimary relative z-30 text-base">
                   {!item.isLinked ? "Link account" : "Unlink account"}
@@ -85,7 +91,7 @@ export const AnimatedTooltip = ({
               handleLinkOrUnlink(
                 item.provider.toLowerCase() === "apple id"
                   ? "apple.com"
-                  : `${item.provider.toLowerCase()}.com`,
+                  : `${item.provider.toLowerCase()}`,
                 item.isLinked,
                 setProviders,
                 user
@@ -93,9 +99,9 @@ export const AnimatedTooltip = ({
             }
           >
             <span className="flex gap-4 items-center">
-              {item.provider == "Google" && <BsGoogle />}
-              {item.provider == "Facebook" && <FaFacebook />}
-              {item.provider == "Apple ID" && <BsApple />}
+              {item.provider == "google.com" && <BsGoogle />}
+              {item.provider == "facebook.com" && <FaFacebook />}
+              {item.provider == "apple.com" && <BsApple />}
               <p className="text-lg">{item.provider}</p>
             </span>
             {!item.isLinked ? <FaLink /> : <FaUnlink />}

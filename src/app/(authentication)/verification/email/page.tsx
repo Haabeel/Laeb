@@ -34,15 +34,16 @@ const EmailVerification = () => {
       .finally(() => setIsLoading(false));
   };
   useEffect(() => {
-    onAuthStateChanged(auth, (mUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (mUser) => {
       if (mUser) {
         setUser(mUser);
-        if (user?.emailVerified) {
+        if (mUser.emailVerified) {
           Cookies.set("hasEmailVerified", "true");
           router.push("/verification/mobile");
         }
       }
     });
+    return () => unsubscribe();
   }, [router, user?.emailVerified]);
 
   return (
@@ -84,7 +85,9 @@ const EmailVerification = () => {
         <button
           className={`px-3 py-2 rounded-md bg-lightSecondary text-[#FFFFFF] flex justify-center items-center gap-2 w-full`}
           type="submit"
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            window.location.reload();
+          }}
         >
           {isLoading ? (
             <>

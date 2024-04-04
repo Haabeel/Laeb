@@ -39,9 +39,9 @@ const Settings = () => {
   const [disable, setDisable] = useState(false);
   const [value, setValue] = useState("");
   const [providers, setProviders] = useState<Provider[]>([
-    { id: 1, provider: "Google", isLinked: false },
-    { id: 2, provider: "Facebook", isLinked: false },
-    { id: 3, provider: "Apple ID", isLinked: false },
+    { id: 1, provider: "google.com", isLinked: false },
+    { id: 2, provider: "facebook.com", isLinked: false },
+    { id: 3, provider: "apple.com", isLinked: false },
   ]);
 
   const getUserPreferences = async (user: User) => {

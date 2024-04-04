@@ -106,7 +106,6 @@ const Page = () => {
           toast.success("You will be signed out in 5 seconds");
           const interval = setTimeout(() => {
             signOut(auth);
-            removeCookies();
             router.push("/dashboard");
           }, 5000);
           return () => clearInterval(interval);

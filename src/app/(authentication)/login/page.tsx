@@ -106,24 +106,31 @@ const Login = () => {
 
         if (userDocSnapshot.exists()) {
           // User document exists, proceed with sign in
-          setUpCookies(signInResult);
+          setUpCookies(signInResult, false);
           router.push("/dashboard");
         } else {
+          const docRef = doc(db, "partners", userId);
+          const docSnapshot = await getDoc(docRef);
+          if (docSnapshot.exists()) {
+            setUpCookies(signInResult, true);
+            router.push("/partner/dashboard");
+          } else {
+            const userData = {
+              firstName: user.displayName?.split(" ")[0] || "",
+              lastName: user.displayName?.split(" ")[1] || "",
+              email: user.email || "",
+              phoneNumber: null,
+              emailSubscription: false,
+              preferredEmirate: null,
+              preferredDistrict: null,
+            };
+
+            await setDoc(userDocRef, userData);
+
+            setUpCookies(signInResult, false);
+            router.push("/dashboard");
+          }
           // User document doesn't exist, create a new one
-          const userData = {
-            firstName: user.displayName?.split(" ")[0] || "",
-            lastName: user.displayName?.split(" ")[1] || "",
-            email: user.email || "",
-            phoneNumber: null,
-            emailSubscription: false,
-            preferredEmirate: null,
-            preferredDistrict: null,
-          };
-
-          await setDoc(userDocRef, userData);
-
-          setUpCookies(signInResult);
-          router.push("/dashboard");
         }
       } else {
         // Handle error if user is null
@@ -148,24 +155,31 @@ const Login = () => {
 
         if (userDocSnapshot.exists()) {
           // User document exists, proceed with sign in
-          setUpCookies(signInResult);
+          setUpCookies(signInResult, false);
           router.push("/dashboard");
         } else {
-          // User document doesn't exist, create a new one
-          const userData = {
-            firstName: user.displayName?.split(" ")[0] || "",
-            lastName: user.displayName?.split(" ")[1] || "",
-            email: user.email || "",
-            phoneNumber: null,
-            emailSubscription: false,
-            preferredEmirate: null,
-            preferredDistrict: null,
-          };
+          const docRef = doc(db, "partners", userId);
+          const docSnapshot = await getDoc(docRef);
+          if (docSnapshot.exists()) {
+            setUpCookies(signInResult, true);
+            router.push("/partner/dashboard");
+          } else {
+            // User document doesn't exist, create a new one
+            const userData = {
+              firstName: user.displayName?.split(" ")[0] || "",
+              lastName: user.displayName?.split(" ")[1] || "",
+              email: user.email || "",
+              phoneNumber: null,
+              emailSubscription: false,
+              preferredEmirate: null,
+              preferredDistrict: null,
+            };
 
-          await setDoc(userDocRef, userData);
+            await setDoc(userDocRef, userData);
 
-          setUpCookies(signInResult);
-          router.push("/dashboard");
+            setUpCookies(signInResult, false);
+            router.push("/dashboard");
+          }
         }
       } else {
         // Handle error if user is null
@@ -189,10 +203,15 @@ const Login = () => {
       const docQuery = query(usersRef, where("email", "==", email));
       const querySnapshot = await getDocs(docQuery);
       if (querySnapshot.empty) {
-        toast.error(
-          "No user found with this email address. Please check your email address and try again."
-        );
-        return;
+        const partnersRef = collection(db, "partners");
+        const partnerQuery = query(partnersRef, where("email", "==", email));
+        const partnerSnapshot = await getDocs(partnerQuery);
+        if (partnerSnapshot.empty) {
+          toast.error(
+            "No user found with this email address. Please check your email address and try again."
+          );
+          return;
+        }
       }
       await sendPasswordResetEmail(auth, email);
       toast.success("Password reset email sent. Please check your inbox.");
@@ -207,29 +226,28 @@ const Login = () => {
       if (validationCheck.success) {
         try {
           setIsLoading(true);
-          const email = getValues("email");
-          const usersRef = collection(db, "users");
-          const docQuery = query(usersRef, where("email", "==", email));
-          const querySnapshot = await getDocs(docQuery);
-          if (querySnapshot.empty) {
-            toast.error(
-              "No user found with this email address. Please check your email address and try again."
-            );
-            setIsLoading(false);
-            return;
-          } else {
-            await signInWithEmailAndPassword(auth, data.email, data.password)
-              .then((res) => {
-                setUpCookies(res);
+          await signInWithEmailAndPassword(auth, data.email, data.password)
+            .then(async (res) => {
+              const docRef = doc(db, "users", res.user.uid);
+              const docSnapshot = await getDoc(docRef);
+              if (docSnapshot.exists()) {
+                setUpCookies(res, false);
                 router.push("/dashboard");
-                setIsLoading(false);
-              })
-              .catch((error: FirebaseError) => {
-                console.log(error);
-                handleLoginError(error);
-                setIsLoading(false);
-              });
-          }
+              } else {
+                const docRef = doc(db, "partners", res.user.uid);
+                const docSnapshot = await getDoc(docRef);
+                if (docSnapshot.exists()) {
+                  setUpCookies(res, true);
+                  router.push("/partner/dashboard");
+                }
+              }
+              setIsLoading(false);
+            })
+            .catch((error: FirebaseError) => {
+              console.log(error);
+              handleLoginError(error);
+              setIsLoading(false);
+            });
         } catch (error) {
           toast.error("An unexpected error occurred. Please try again later.");
           setIsLoading(false);

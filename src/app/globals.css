@@ -9,3 +9,20 @@
 .dropdown-container::-webkit-scrollbar {
   display: none; /* Hide the scrollbar */
 }
+
+.sticky-container::-webkit-scrollbar {
+  width: 5px;
+  background-color: transparent;
+}
+.sticky-container::-webkit-scrollbar-thumb {
+  background-color: #ffffff;
+  border-radius: 5px;
+}
+.sticky-container-dark::-webkit-scrollbar {
+  width: 5px;
+  background-color: transparent;
+}
+.sticky-container-dark::-webkit-scrollbar-thumb {
+  background-color: #333333;
+  border-radius: 5px;
+}

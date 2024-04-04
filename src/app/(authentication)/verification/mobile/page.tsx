@@ -1,5 +1,6 @@
 "use client";
 import {
+  IdTokenResult,
   PhoneAuthProvider,
   RecaptchaVerifier,
   User,
@@ -47,7 +48,7 @@ const MobileVerification = () => {
       where("phoneNumber", "==", "+971" + phoneNumber)
     );
     const usersSnapshot = await getDocs(usersQuery);
-    if (!usersSnapshot.empty) {
+    if (!usersSnapshot.empty && user?.uid !== usersSnapshot.docs[0].id) {
       return toast.error("Phone number already in use");
     }
     if (user !== null) {
@@ -76,6 +77,7 @@ const MobileVerification = () => {
             }, 1000);
           })
           .catch((error) => {
+            console.error(error);
             toast.error(formatPhoneVerificationError(error));
           });
         toast.success("OTP sent!");
@@ -100,17 +102,36 @@ const MobileVerification = () => {
         linkWithCredential(user!!, phoneCredential)
           .then(async () => {
             const docRef = doc(db, "users", user.uid);
-            await updateDoc(docRef, {
-              phoneNumber: "+971" + phoneNumber,
-            });
-            Cookies.set("hasPhoneVerified", "true");
-            router.push("/dashboard");
+            const docSnapshot = await getDoc(docRef);
+            if (docSnapshot.exists()) {
+              await updateDoc(docRef, {
+                phoneNumber: "+971" + phoneNumber,
+              });
+              Cookies.set("hasPhoneVerified", "true");
+              router.push("/dashboard");
+            } else {
+              const docRef = doc(db, "partners", user.uid);
+              const docSnapshot = await getDoc(docRef);
+              if (docSnapshot.exists()) {
+                await updateDoc(docRef, {
+                  companyPhoneNumber: "+971" + phoneNumber,
+                });
+                Cookies.set("hasPhoneVerified", "true");
+                Cookies.set("isPartner", "true");
+                router.push("/partner/dashboard");
+              }
+            }
           })
-          .catch((error) => toast.error(formatPhoneVerificationError(error)));
+          .catch((error: any) => {
+            console.log(error);
+            toast.error(formatPhoneVerificationError(error));
+          });
       } catch (error) {
+        console.log(error);
         toast.error("Something went wrong.");
       }
     } else {
+      console.log();
       toast.error("Something went wrong, please try again");
     }
   };
@@ -124,9 +145,22 @@ const MobileVerification = () => {
           setIsProvider(docSnapshot.data().phoneNumber == null ? false : true);
           setPhoneNumber(
             docSnapshot.data().phoneNumber
-              ? docSnapshot.data().phoneNumber.slice(3)
+              ? docSnapshot.data().phoneNumber.slice(4)
               : ""
           );
+        } else {
+          const docRef = doc(db, "partners", mUser.uid);
+          const docSnapshot = await getDoc(docRef);
+          if (docSnapshot.exists()) {
+            setIsProvider(
+              docSnapshot.data().companyPhoneNumber == null ? false : true
+            );
+            setPhoneNumber(
+              docSnapshot.data().companyPhoneNumber
+                ? docSnapshot.data().companyPhoneNumber.slice(4)
+                : ""
+            );
+          }
         }
         setUser(mUser);
       }
@@ -153,7 +187,6 @@ const MobileVerification = () => {
           </p>
           <input
             type="tel"
-            disabled={isProvider}
             maxLength={9}
             placeholder={!isProvider ? "Enter your Phone number" : ""}
             className={`bg-lightAccent placeholder:text-darkPrimary text-darkPrimary outline-none focus:outline-none rounded-r-lg px-2 py-3 self-stretch h-full`}

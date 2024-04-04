@@ -4,6 +4,10 @@ import {
   ROUTES_DASHBOARD,
   ROUTES_DASHBOARD_CHANGE_EMAIL,
   ROUTES_LOGIN,
+  ROUTES_PARTNER,
+  ROUTES_PARTNER_DASHBOARD,
+  ROUTES_PARTNER_DASHBOARD_LIST,
+  ROUTES_PARTNER_SIGNUP,
   ROUTES_REGISTER,
   ROUTES_VERIFICATION_EMAIL,
   ROUTES_VERIFICATION_MOBILE,
@@ -27,18 +31,30 @@ const hasVerifiedPhoneNumber = (request: NextRequest) => {
   return true;
 };
 
+const isPartner = (request: NextRequest) => {
+  const verify = request.cookies.get("isPartner");
+  if (!verify) return false;
+  return true;
+};
+
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.pathname;
   if (url == "/") return NextResponse.next();
   if ([ROUTES_LOGIN, ROUTES_REGISTER].includes(url)) {
     const isAuth = isAuthenticated(request);
-    if (isAuth) {
+    const is_Partner = isPartner(request);
+    if (isAuth && !is_Partner) {
       const redirectUrl = new URL(ROUTES_DASHBOARD, request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+    if (isAuth && is_Partner) {
+      const redirectUrl = new URL(ROUTES_PARTNER_DASHBOARD, request.url);
       return NextResponse.redirect(redirectUrl);
     }
   }
   if ([ROUTES_VERIFICATION_EMAIL, ROUTES_VERIFICATION_MOBILE].includes(url)) {
     const isAuth = isAuthenticated(request);
+    const is_Partner = isPartner(request);
     if (!isAuth) {
       // Redirect to login if not authenticated
       const redirectUrl = new URL(ROUTES_LOGIN, request.url);
@@ -54,6 +70,10 @@ export function middleware(request: NextRequest) {
             );
             return NextResponse.redirect(redirectUrl);
           }
+          if (is_Partner) {
+            const redirectUrl = new URL(ROUTES_PARTNER_DASHBOARD, request.url);
+            return NextResponse.redirect(redirectUrl);
+          }
           // Redirect to dashboard if email verified
           const redirectUrl = new URL(ROUTES_DASHBOARD, request.url);
           return NextResponse.redirect(redirectUrl);
@@ -61,6 +81,10 @@ export function middleware(request: NextRequest) {
       } else if (url === ROUTES_VERIFICATION_MOBILE) {
         const hasPhoneVerified = hasVerifiedPhoneNumber(request);
         if (hasPhoneVerified) {
+          if (is_Partner) {
+            const redirectUrl = new URL(ROUTES_PARTNER_DASHBOARD, request.url);
+            return NextResponse.redirect(redirectUrl);
+          }
           const redirectUrl = new URL(ROUTES_DASHBOARD, request.url);
           return NextResponse.redirect(redirectUrl);
         }
@@ -73,7 +97,8 @@ export function middleware(request: NextRequest) {
   }
   if (url === ROUTES_DASHBOARD) {
     const isAuth = isAuthenticated(request);
-    if (!isAuth) {
+    const is_Partner = isPartner(request);
+    if (!isAuth || is_Partner) {
       const redirectUrl = new URL(ROUTES_LOGIN, request.url);
       return NextResponse.redirect(redirectUrl);
     } else {
@@ -96,6 +121,41 @@ export function middleware(request: NextRequest) {
     const isAuth = isAuthenticated(request);
     if (!isAuth) {
       const redirectUrl = new URL(ROUTES_LOGIN, request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  if ([ROUTES_PARTNER_SIGNUP].includes(url)) {
+    const isAuth = isAuthenticated(request);
+    if (isAuth) {
+      const redirectUrl = new URL(ROUTES_PARTNER_DASHBOARD, request.url);
+      console.log(redirectUrl);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  if (url === ROUTES_PARTNER_DASHBOARD) {
+    const isAuth = isAuthenticated(request);
+    const is_Partner = isPartner(request);
+    if (!isAuth) {
+      console.log("Redirecting to login");
+      const redirectUrl = new URL(ROUTES_LOGIN, request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+    if (!is_Partner) {
+      const redirectUrl = new URL(ROUTES_DASHBOARD, request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+  if (url === ROUTES_PARTNER_DASHBOARD_LIST) {
+    const isAuth = isAuthenticated(request);
+    const is_Partner = isPartner(request);
+    if (!isAuth) {
+      const redirectUrl = new URL(ROUTES_LOGIN, request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+    if (!is_Partner) {
+      const redirectUrl = new URL(ROUTES_DASHBOARD, request.url);
       return NextResponse.redirect(redirectUrl);
     }
   }

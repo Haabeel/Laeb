@@ -7,7 +7,13 @@ type AccountInformationInputProps = {
   user: User | null;
   data?: string;
   id: string;
-  fieldName: "email" | "firstName" | "lastName" | "phoneNumber" | "password";
+  fieldName:
+    | "email"
+    | "firstName"
+    | "lastName"
+    | "phoneNumber"
+    | "password"
+    | "fullName";
   editable?: boolean;
   setNeedsUpdate?: React.Dispatch<React.SetStateAction<boolean>>;
   setData?: React.Dispatch<React.SetStateAction<string>>;
@@ -39,6 +45,8 @@ const AccountInformationInput = ({
           return user.phoneNumber ? user.phoneNumber : "";
         case "password":
           return "********";
+        case "fullName":
+          return user.displayName || "";
         default:
           return ""; // Handle unknown fields gracefully
       }

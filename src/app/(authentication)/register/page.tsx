@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import {
+  IdTokenResult,
   createUserWithEmailAndPassword,
   updatePhoneNumber,
   updateProfile,
@@ -20,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { toast, Toaster } from "sonner";
 import { doc, setDoc } from "firebase/firestore";
 import Cookies from "js-cookie";
+import { ROUTES_VERIFICATION_EMAIL } from "../../../../routes";
 const bebasNeue = Bebas_Neue({
   weight: "400",
   subsets: ["latin"],
@@ -71,7 +73,7 @@ const RegistrationForm = () => {
                     })
                       .then(() => {
                         Cookies.set("isAuth", "true");
-                        router.push("/verification/email");
+                        router.push(ROUTES_VERIFICATION_EMAIL);
                         setIsLoading(false);
                       })
                       .catch(() => {
