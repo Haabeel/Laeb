@@ -134,7 +134,7 @@ const PartnerDashboard = () => {
               setPartner={setPartner}
             />
           ) : tab === "Settings" ? (
-            <Settings user={user} />
+            <Settings user={user} partner={partner} setPartner={setPartner} />
           ) : null}
         </div>
       </div>

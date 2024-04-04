@@ -311,3 +311,49 @@ export function validateCreditCardDetails(
 
   return { cardType: validateCreditCard(cardNumber) as string, isValid: true };
 }
+export const calculateNextBillingDate = (latestBilledAt: Date): Date => {
+  const nextBillingDate = new Date(latestBilledAt);
+  nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+  return nextBillingDate;
+};
+export function getOrdinalDay(day: number): string {
+  if (day >= 11 && day <= 13) {
+    return day + "th";
+  }
+  switch (day % 10) {
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
+  }
+}
+
+export function formatDate(date: Date): string {
+  const day = date.getDate();
+  const month = getMonthName(date.getMonth());
+  const year = date.getFullYear();
+
+  return `${getOrdinalDay(day)} ${month} ${year}`;
+}
+
+function getMonthName(month: number): string {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  return months[month];
+}

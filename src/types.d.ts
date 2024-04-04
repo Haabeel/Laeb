@@ -57,4 +57,6 @@ export type Partner = {
     whatsapp: string;
   };
   profilePicture?: { url: string; thumbnailUrl: string | null };
+  emailNotification?: boolean;
+  billingDates?: { latestBilledAt: string; nextBillingAt: string };
 };
