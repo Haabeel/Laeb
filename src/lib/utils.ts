@@ -16,6 +16,7 @@ import { Provider } from "@/types";
 import { toast } from "sonner";
 import { link } from "fs";
 import { auth } from "../../firebase.config";
+import { Resend } from "resend";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -357,3 +358,5 @@ function getMonthName(month: number): string {
   ];
   return months[month];
 }
+
+export const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
