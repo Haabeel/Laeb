@@ -2,11 +2,17 @@ import EmailLayout from "@/components/EmailLayout";
 import { FormFields } from "@/components/shared/ContactUs";
 import React from "react";
 import { Resend } from "resend";
+import { NextApiRequest, NextApiResponse } from "next";
 
-const resend = new Resend("re_f6Qcrxdn_Eynr7ETioXvLUrh4kwyeT18r");
+const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
 
-export async function POST(req: { json: () => FormFields }) {
-  const body = await req.json();
+export default async function POST(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method Not Allowed" });
+    return;
+  }
+
+  const body: FormFields = req.body;
   try {
     const data = await resend.emails.send({
       from: `Contact US <onboarding@resend.dev>`,
@@ -15,8 +21,8 @@ export async function POST(req: { json: () => FormFields }) {
       react: React.createElement(EmailLayout, { body }),
       reply_to: body.email,
     });
-    return Response.json(data);
+    res.status(200).json(data);
   } catch (error) {
-    return Response.json({ error });
+    res.status(500).json({ error });
   }
 }
