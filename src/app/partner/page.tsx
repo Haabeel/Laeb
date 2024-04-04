@@ -1,9 +1,5 @@
 "use client";
-import { AuroraBackground } from "@/components/ui/aurora-background";
-import {
-  TypewriterEffect,
-  TypewriterEffectSmooth,
-} from "@/components/ui/type-writer-effect";
+
 import { stringToWordsArray } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,7 +12,6 @@ import customerSupport from "@/assets/images/customerSupport.jpg";
 import LaebLogo from "@/assets/images/logo-final.svg";
 import { StickyScroll } from "@/components/ui/sticky-scroll";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { WavyBackground } from "@/components/ui/wavy-background";
 import Logo from "@/assets/images/logo-nobg.png";
 type Content = {
