@@ -59,7 +59,7 @@ const Layout = ({
         <section className="flex items-center justify-between gap-10">
           <Link
             href={"/explore"}
-            className="text-lg text-bold text-center hover:text-white"
+            className="text-lg text-bold text-center text-white bg-night px-3 py-2 rounded-md"
           >
             Explore available bookings
           </Link>
@@ -67,14 +67,14 @@ const Layout = ({
             (isAuth ? (
               <Link
                 href={"/partner/dashboard"}
-                className="text-lg text-bold text-center hover:text-white"
+                className="text-lg text-bold text-center text-white bg-night px-3 py-2 rounded-md"
               >
                 Dashboard
               </Link>
             ) : (
               <Link
                 href={"/login"}
-                className="text-lg text-bold text-center hover:text-white"
+                className="text-lg text-bold text-center text-white bg-night px-3 py-2 rounded-md"
               >
                 Login
               </Link>
@@ -83,14 +83,14 @@ const Layout = ({
             (isAuth ? (
               <Link
                 href={"/dashboard"}
-                className="text-lg text-bold text-center hover:text-white"
+                className="text-lg text-bold text-center text-white bg-night px-3 py-2 rounded-md"
               >
                 Dashboard
               </Link>
             ) : (
               <Link
                 href={"/login"}
-                className="text-lg text-bold text-center hover:text-white"
+                className="text-lg text-bold text-center text-white bg-night px-3 py-2 rounded-md"
               >
                 Login
               </Link>

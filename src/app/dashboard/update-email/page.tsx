@@ -128,7 +128,10 @@ const Page = () => {
 
   return (
     <div className="flex flex-col gap-4 bg-darkPrimary w-screen h-screen justify-center items-center">
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-1">
+        <p className="text-lg text-lightPrimary">
+          Enter your new email address
+        </p>
         <input
           type="email"
           value={updatedEmail}
@@ -137,17 +140,26 @@ const Page = () => {
           autoComplete="off"
           placeholder="new Email"
         />
-        <input
-          type="password"
-          id="password"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-96 focus:shadow-[rgba(50,50,93,0.25)_0px_6px_12px_-2px,_rgba(0,0,0,0.3)_0px_3px_7px_-3px]`}
-          autoComplete="off"
-          placeholder="*******"
-        />
       </div>
-      <section className="grid grid-rows-3 gap-5 w-96">
+
+      <section className="flex flex-col items-center justify-center w-96">
+        <section className="flex flex-col items-center justify-center w-full gap-1 text-lg text-lightPrimary">
+          <p className="w-full">Enter your password to authenticate</p>
+          <input
+            type="password"
+            id="password"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-96 focus:shadow-[rgba(50,50,93,0.25)_0px_6px_12px_-2px,_rgba(0,0,0,0.3)_0px_3px_7px_-3px]`}
+            autoComplete="off"
+            placeholder="*******"
+          />
+        </section>
+        <section className="flex w-96 gap-1 items-center">
+          <div className="h-0.5 bg-lightPrimary w-full" />
+          <p className="text-lg text-lightPrimary">Or</p>
+          <div className="h-0.5 bg-lightPrimary w-full" />
+        </section>
         <button
           className={`flex gap-2 py-2 px-3 w-96 rounded-lg bg-[#FFFFFF] items-center justify-start`}
           type="button"
@@ -161,30 +173,6 @@ const Page = () => {
           <FcGoogle className={`h-5 w-5`} />
           <p className={`text-sm text-[#000000] font-semibold`}>
             Continue with google
-          </p>
-        </button>
-        <button
-          className={`flex gap-2 py-2 px-3 rounded-lg bg-[#FFFFFF] items-center justify-start`}
-          type="button"
-          onClick={() => {
-            const mUser = auth.currentUser;
-            if (mUser) {
-              handleReauthenticationAndEmailChange(mUser, "facebook");
-            }
-          }}
-        >
-          <FaFacebookSquare className={`h-5 w-5 text-[#0000AA]`} />
-          <p className={`text-sm text-[#000000] font-semibold`}>
-            Continue with facebook
-          </p>
-        </button>
-        <button
-          className={`flex gap-2 py-2 px-3 rounded-lg bg-[#FFFFFF] items-center justify-start`}
-          type="button"
-        >
-          <FaApple className={`h-5 w-5`} />
-          <p className={`text-sm text-[#000000] font-semibold`}>
-            Continue with apple
           </p>
         </button>
       </section>

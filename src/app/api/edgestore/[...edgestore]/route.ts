@@ -5,6 +5,9 @@ const edgeStoreRouter = es.router({
   profilePictures: es.imageBucket({
     maxSize: 1024 * 1024 * 3,
   }),
+  listings: es.imageBucket({
+    maxSize: 1024 * 1024 * 5,
+  }),
 });
 const handler = createEdgeStoreNextHandler({
   router: edgeStoreRouter,

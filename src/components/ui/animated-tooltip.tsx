@@ -21,11 +21,13 @@ export const AnimatedTooltip = ({
   user,
   setProviders,
   className,
+  providersContainerClassName,
 }: {
   items: Provider[];
   user: User;
   setProviders: React.Dispatch<React.SetStateAction<Provider[]>>;
   className?: string;
+  providersContainerClassName?: string;
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const springConfig = { stiffness: 100, damping: 5 };
@@ -40,10 +42,6 @@ export const AnimatedTooltip = ({
     useTransform(x, [-100, 100], [-50, 50]),
     springConfig
   );
-  const handleMouseMove = (event: any) => {
-    const halfWidth = event.target.offsetWidth / 2;
-    x.set(event.nativeEvent.offsetX - halfWidth); // set the x value, which is then used in transform and rotate
-  };
 
   return (
     <>
@@ -86,7 +84,10 @@ export const AnimatedTooltip = ({
             )}
           </AnimatePresence>
           <button
-            className="flex justify-between items-center w-full bg-white text-darkPrimary rounded-md px-3 py-2"
+            className={cn(
+              "flex justify-between items-center w-full bg-white text-darkPrimary rounded-md px-3 py-2",
+              providersContainerClassName
+            )}
             onClick={() =>
               handleLinkOrUnlink(
                 item.provider.toLowerCase() === "apple id"

@@ -1,20 +1,28 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { cn } from "@/utility";
 
 type DashboardNavProps = {
   activeTab: string;
   setActiveTab: React.Dispatch<React.SetStateAction<string>>;
   tabs: string[];
   layoutId: string;
+  className?: string;
 };
 const DashboardNav = ({
   activeTab,
   setActiveTab,
   tabs,
   layoutId,
+  className,
 }: DashboardNavProps) => {
   return (
-    <nav className="flex gap-10 justify-center items-center">
+    <nav
+      className={cn(
+        "flex gap-10 justify-center items-center text-xl",
+        className
+      )}
+    >
       {tabs.map((tab, idx) => (
         <button
           key={idx}
@@ -23,7 +31,7 @@ const DashboardNav = ({
           }}
           className={`${
             tab === activeTab ? "" : "hover:text-white/60"
-          } relative rounded-full px-3 py-1.5 text-xl font-medium text-white outline-sky-400 transition focus-visible:outline-2`}
+          } relative rounded-full px-3 py-1.5 font-medium text-white outline-sky-400 transition focus-visible:outline-2`}
           style={{ WebkitTapHighlightColor: "transparent" }}
         >
           {activeTab === tab && (

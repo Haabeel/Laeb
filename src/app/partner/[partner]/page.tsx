@@ -15,39 +15,27 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { Listing, Partner } from "@/types";
+import { Listing, Partner, pageUser } from "@/types";
 import Image from "next/image";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import { MdDeleteForever } from "react-icons/md";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { list } from "postcss";
 import Link from "next/link";
-interface pageUser {
-  user: User;
-  isPartner: boolean;
-  isAuth: boolean;
-}
+import { FaRegUser } from "react-icons/fa6";
+import { getMaxMinPrice } from "@/lib/utils";
+import { format } from "date-fns";
+import { BsCalendar } from "react-icons/bs";
+import { ROUTES_PARTNER_DASHBOARD_LIST } from "../../../../routes";
+
 const Page = ({ params }: { params: { partner: string } }) => {
   const [partner, setPartner] = React.useState<Partner | null>(null);
   const [user, setUser] = React.useState<pageUser | null>(null);
   const [about, setAbout] = React.useState<string>("");
-  const [sport, setSport] = React.useState<string>("");
   const [sports, setSports] = React.useState<string[]>([]);
   const [listings, setListings] = React.useState<Listing[]>([]);
-  const [selectedSport, setSelectedSport] = useState<number | null>(null);
   useEffect(() => {
     const fetchPartner = async () => {
       const collectionRef = collection(db, "partners");
-      const queryRef = query(
-        collectionRef,
-        where("id", "==", params.partner.toLowerCase())
-      );
+      const queryRef = query(collectionRef, where("id", "==", params.partner));
       const querySnapshot = await getDocs(queryRef);
       if (querySnapshot.empty) {
         return;
@@ -55,11 +43,41 @@ const Page = ({ params }: { params: { partner: string } }) => {
       const partnerData = querySnapshot.docs[0].data() as Partner;
       setPartner(partnerData);
       setAbout(partnerData.about || "");
-      setSports(partnerData.sports || []);
-      setListings(partnerData.listings || []);
+      const listingsRef = collection(db, "listings");
+      const listingsQueryRef = query(
+        listingsRef,
+        where("partnerId", "==", partnerData.id)
+      );
+      const listingsQuerySnapshot = await getDocs(listingsQueryRef);
+      const listingsData = Promise.all(
+        listingsQuerySnapshot.docs.map(async (document) => {
+          const listing = document.data() as Listing;
+          if (listing.id === undefined) {
+            await updateDoc(doc(db, "listings", document.id), {
+              id: document.id,
+            });
+            listing.id = document.id;
+          }
+          return listing;
+        })
+      );
+      setListings(await listingsData);
+
+      //setListings(partnerData.listings || []);
     };
     fetchPartner();
   }, [params.partner]);
+
+  useEffect(() => {
+    if (listings.length > 0) {
+      const sportsSet: Set<string> = new Set();
+      listings.forEach((listing) => {
+        sportsSet.add(listing.sport);
+      });
+      const sportsArray = Array.from(sportsSet);
+      setSports(sportsArray);
+    }
+  }, [listings]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (mUser) => {
@@ -102,65 +120,8 @@ const Page = ({ params }: { params: { partner: string } }) => {
     }
   };
 
-  const deleteSport = async () => {
-    try {
-      if (selectedSport === null) return;
-      if (partner === null) return;
-      if (partner.listings === undefined) return;
-      const listingOfSport = partner.listings.filter(
-        (listing) => listing.sport == sports[selectedSport]
-      );
-      if (listingOfSport.length > 0)
-        return toast.error("There are listings associated with this sport", {
-          action: {
-            label: "Delete all the listings associated with that sport?",
-            async onClick(event) {
-              try {
-                const updatedListings = partner.listings!!.filter(
-                  (listing) => listing.sport != sports[selectedSport]
-                );
-                await updateDoc(doc(db, "partners", user!!.user.uid), {
-                  listings: updatedListings,
-                });
-                const updatedSports = sports.filter(
-                  (sport, index) => index !== selectedSport
-                );
-                await updateDoc(doc(db, "partners", user!!.user.uid), {
-                  sports: updatedSports,
-                });
-                setSports(updatedSports);
-                setListings(updatedListings);
-                toast.success("Sport deleted successfully");
-              } catch (error: any) {
-                toast.error(error);
-              }
-            },
-          },
-          className:
-            "bg-capuut text-white flex flex-col gap-2 justify-center items-center rounded-lg p-3 w-full",
-          actionButtonStyle: {
-            width: "100%",
-            textAlign: "center",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          },
-        });
-      const updatedSports = sports.filter(
-        (sport, index) => index !== selectedSport
-      );
-      await updateDoc(doc(db, "partners", user!!.user.uid), {
-        sports: updatedSports,
-      });
-      setSports(updatedSports);
-      toast.success("Sport deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete sport");
-    }
-  };
-
   return (
-    <div className="flex justify-between items-center gap-96 bg-night w-full h-full py-5 px-10">
+    <div className="flex justify-between items-center gap-32 bg-night w-full h-full py-16 px-32">
       <div className="flex flex-col justify-start h-full items-start gap-5">
         <section className="flex gap-3 items-center">
           <div
@@ -168,17 +129,16 @@ const Page = ({ params }: { params: { partner: string } }) => {
               user?.isAuth && "cursor-pointer"
             } ${!partner && "animate-pulse"}`}
           >
-            {partner && partner.companyImage && (
+            {partner && partner.profilePicture?.thumbnailUrl ? (
               <Image
-                src={partner.companyImage}
+                src={partner.profilePicture.thumbnailUrl}
                 alt="Company Logo"
                 width={80}
                 height={80}
-                className="rounded-full"
+                className="rounded-full object-cover w-full h-full"
               />
-            )}
-            {partner && !partner.companyImage && user?.isAuth && (
-              <IoMdAdd size={30} />
+            ) : (
+              <FaRegUser size={30} />
             )}
           </div>
           <p
@@ -213,9 +173,12 @@ const Page = ({ params }: { params: { partner: string } }) => {
                 style={{ resize: "none" }}
               />
             ) : (
-              <p className="text-white w-full min-h-60 bg-night border-ebony border-2 text-lg rounded-lg p-3">
-                {partner.about}
-              </p>
+              <textarea
+                value={about}
+                disabled
+                className="w-full min-h-60 outline-none focus:outline-none sticky-container bg-night border-ebony border-2 text-white text-lg rounded-lg p-3"
+                style={{ resize: "none" }}
+              />
             ))}
         </section>
         {partner && sports.length > 0 && (
@@ -225,24 +188,33 @@ const Page = ({ params }: { params: { partner: string } }) => {
               {sports.map((sport, index) => (
                 <li
                   key={index}
-                  className="bg-ebony text-center text-white text-lg rounded-lg p-2 cursor-default relative"
-                  onMouseEnter={() => setSelectedSport(index)}
-                  onMouseLeave={() => setSelectedSport(null)}
+                  className="bg-ebony text-center text-white text-base rounded-lg py-2 px-3 cursor-default relative"
                 >
                   {sport}
-                  {selectedSport === index &&
-                    user?.isAuth &&
-                    user?.isPartner && (
-                      <MdDeleteForever
-                        className="absolute top-0 right-0"
-                        onClick={() => deleteSport()}
-                      />
-                    )}
                 </li>
               ))}
             </ul>
           </section>
         )}
+        <section className="flex flex-col gap-2 h-1/4 justify-center items-start w-full self-end">
+          <p className="text-2xl text-white text-bold">Contact Us</p>
+          <div
+            className={`flex flex-col justify-center items-start gap-2 rounded-lg p-3 bg-ebony ${
+              !partner && "animate-pulse w-64 h-32"
+            }`}
+          >
+            {partner && (
+              <ul>
+                {partner?.contactInfo?.map((contact, index) => (
+                  <li key={index} className="text-white text-lg">
+                    <b>{contact.type}: </b>
+                    <span className="text-white">{contact.value}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
       </div>
       <div className="flex flex-col w-full h-full gap-4">
         <section className="flex flex-col justify-center items-center gap-3 h-full w-full pt-5">
@@ -251,43 +223,69 @@ const Page = ({ params }: { params: { partner: string } }) => {
           </h3>
           <div className="flex flex-col gap-2 w-full h-full">
             <div
-              className={`${
+              className={`w-full ${
                 listings.length > 1
-                  ? `grid grid-cols-2 grid-flow-row gap-2`
-                  : "flex justify-center items-center"
+                  ? `grid grid-cols-2 gap-3`
+                  : "flex justify-start items-center"
               } w-full h-full rounded-lg p-3 overflow-x-hidden overflow-y-auto sticky-container ${
                 !partner && "animate-pulse bg-ebony h-[90%]"
               } ${listings.length === 0 && "bg-ebony"}`}
             >
               {listings.map((listing, index) => (
-                <div
+                <Link
+                  href={`/explore/${listing.id}`}
                   key={listing.id || index}
-                  className="flex flex-col gap-1 bg-ebony rounded-lg"
+                  className="flex flex-col gap-1 bg-ebony rounded-lg h-[20rem] p-3"
                 >
                   <Image
-                    src={listing.images[0]}
+                    src={listing.images[0].url}
                     height={1000}
                     width={1000}
                     alt={listing.name}
-                    className="object-cover rounded-tr-lg rounded-tl-lg h-[60%] w-full"
+                    className="object-cover rounded-lg h-[12rem] w-auto"
                   />
-                  <p className="text-white text-base font-bold ml-3">
-                    {listing.name}
-                  </p>
-                  <section className="flex flex-col justify-center gap-1 h-[20%] items-start">
-                    <p className="text-white text-sm ml-3 flex gap-2 items-center">
-                      <FaMoneyBill />
-                      {listing.price} AED
+                  <div className="flex items-center justify-between w-full">
+                    <p className="text-white text-base font-bold ml-3">
+                      {listing.name}
                     </p>
-                    <p className="text-white text-sm ml-3 flex items-start gap-2">
+
+                    <p className="text-white text-sm ml-3 font-bold bg-night px-2 py-1 rounded-md w-fit">
+                      {listing.sport}
+                    </p>
+                  </div>
+
+                  <section className="flex flex-col justify-center gap-1 h-[20%] items-start">
+                    <div className="text-white text-sm ml-3 flex gap-2 items-center">
+                      <FaMoneyBill />
+                      <p>
+                        {getMaxMinPrice(listing.dates[0].timings).maxPrice ===
+                        getMaxMinPrice(listing.dates[0].timings).minPrice
+                          ? getMaxMinPrice(listing.dates[0].timings).maxPrice +
+                            " AED"
+                          : getMaxMinPrice(listing.dates[0].timings).minPrice +
+                            " AED" +
+                            " - " +
+                            getMaxMinPrice(listing.dates[0].timings).maxPrice +
+                            " AED"}
+                      </p>
+                    </div>
+                    <div className="text-white text-sm ml-3 flex items-start gap-2">
                       <FaLocationDot className="mt-0.5" />
                       <p>{listing.location}</p>
-                    </p>
+                    </div>
+                    <div className="text-white text-sm ml-3 flex items-start gap-2">
+                      <BsCalendar className="mt-0.5" />
+                      <p>
+                        {format(listing.dates[0].date, "dd/MM/yyyy") +
+                          " - " +
+                          format(
+                            listing.dates[listing.dates.length - 1].date,
+                            "dd/MM/yyyy"
+                          )}
+                      </p>
+                    </div>
                   </section>
-                  <p className="text-white text-sm ml-3 font-bold">
-                    {listing.sport}
-                  </p>
-                </div>
+                </Link>
               ))}
               {listings.length === 0 && (
                 <p className="text-white text-2xl text-center">
@@ -297,40 +295,11 @@ const Page = ({ params }: { params: { partner: string } }) => {
             </div>
             {user?.isAuth && user?.isPartner && (
               <Link
-                href={"/partner/dashboard/list"}
+                href={ROUTES_PARTNER_DASHBOARD_LIST}
                 className="bg-capuut text-center text-lg text-white rounded-lg p-2"
               >
                 Add Listing
               </Link>
-            )}
-          </div>
-        </section>
-        <section className="flex flex-col gap-2 h-1/4 justify-center items-start self-end">
-          <p className="text-2xl text-white text-bold">Contact Us</p>
-          <div
-            className={`flex flex-col justify-center items-start gap-2 rounded-lg p-3 bg-ebony ${
-              !partner && "animate-pulse w-64 h-32"
-            }`}
-          >
-            {partner && (
-              <ul>
-                <li className="text-white text-lg">
-                  <b>Email: </b>
-                  <span className="text-white">{partner?.companyEmail}</span>
-                </li>
-                <li className="text-white text-lg">
-                  <b>Phone: </b>
-                  <span className="text-white">
-                    {partner?.companyPhoneNumber}
-                  </span>
-                </li>
-                {partner?.contactInfo?.map((contact, index) => (
-                  <li key={index} className="text-white text-lg">
-                    <b>{contact.type}: </b>
-                    <span className="text-white">{contact.value}</span>
-                  </li>
-                ))}
-              </ul>
             )}
           </div>
         </section>

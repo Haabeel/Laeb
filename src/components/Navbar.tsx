@@ -13,13 +13,9 @@ const BebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 const Navbar = ({
   page,
   setPage,
-  isDarkMode,
-  setIsDarkMode,
 }: {
   page: navPages;
   setPage: Dispatch<SetStateAction<navPages>>;
-  isDarkMode: boolean;
-  setIsDarkMode: Dispatch<SetStateAction<boolean>>;
 }) => {
   const [link, setLink] = useState("/login");
   const title = "LA'EB";
@@ -34,9 +30,7 @@ const Navbar = ({
   }, []);
   return (
     <nav
-      className={`mx-2 mt-2 ${
-        isDarkMode ? "text-darkSecondary" : "text-lightSecondary"
-      } flex justify-between items-center rounded-md px-3 h-[10%]`}
+      className={`mx-2 mt-2 ${"text-darkSecondary"} flex justify-between items-center rounded-md px-3 h-[10%]`}
     >
       <Image
         src={logo}
@@ -51,11 +45,7 @@ const Navbar = ({
             href={"/partner"}
             className={`text-md text-center ${
               inter.className
-            } border py-2 px-3 rounded-xl w-[12rem] border-darkSecondary ${
-              isDarkMode
-                ? "hover:bg-darkSecondary text-darkSecondary hover:text-darkAccent"
-                : "hover:bg-lightSecondary text-lightSecondary hover:text-lightPrimary"
-            } transition-colors duration-200 ease-in`}
+            } border py-2 px-3 rounded-xl w-[12rem] border-darkSecondary ${"hover:bg-darkSecondary text-darkSecondary hover:text-darkAccent"} transition-colors duration-200 ease-in`}
           >
             Become a partner
           </Link>
@@ -64,11 +54,7 @@ const Navbar = ({
           href={link}
           className={`text-md text-center ${
             inter.className
-          } border py-2 px-3 w-[12rem] rounded-xl border-darkSecondary ${
-            isDarkMode
-              ? "hover:bg-darkSecondary text-darkSecondary hover:text-darkAccent hover:border-darkSecondary"
-              : "hover:bg-lightSecondary text-lightSecondary hover:text-lightPrimary hover:border-lightSecondary"
-          } transition-colors duration-200 ease-in`}
+          } border py-2 px-3 w-[12rem] rounded-xl border-darkSecondary ${"hover:bg-darkSecondary text-darkSecondary hover:text-darkAccent hover:border-darkSecondary"} transition-colors duration-200 ease-in`}
         >
           {link == "/login" ? "Sign in" : "Dashboard"}
         </Link>

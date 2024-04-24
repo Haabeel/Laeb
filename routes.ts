@@ -10,3 +10,4 @@ export const ROUTES_PARTNER = "/partner";
 export const ROUTES_PARTNER_SIGNUP = "/partner/signup";
 export const ROUTES_PARTNER_DASHBOARD = "/partner/dashboard";
 export const ROUTES_PARTNER_DASHBOARD_LIST = "/partner/dashboard/list";
+export const ROUTES_EXPLORE = "/explore";

@@ -1,6 +1,11 @@
 "use client";
 
-import { validateCreditCardDetails } from "@/lib/utils";
+import {
+  encrypt,
+  hashKey,
+  hashPassword,
+  validateCreditCardDetails,
+} from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import bcrypt from "bcryptjs";
 import { AES } from "crypto-js";
@@ -9,6 +14,7 @@ import {
   IdTokenResult,
   UserCredential,
   createUserWithEmailAndPassword,
+  deleteUser,
   updateProfile,
 } from "firebase/auth";
 import { Bebas_Neue } from "next/font/google";
@@ -82,14 +88,12 @@ const SignUp = () => {
               data.companyPassword
             );
             await updateProfile(user.user, { displayName: data.companyName });
-            const salt = await bcrypt.genSalt(10);
-            const key = await bcrypt.hash(data.companyPassword, salt);
-            const cardNumber = AES.encrypt(
-              data.companyCardNumber,
-              key
-            ).toString();
-            const cardCVV = AES.encrypt(data.companyCardCVV, key).toString();
+            const key = hashKey(data.companyPassword, 16);
+            const hashedPassword = await hashPassword(data.companyPassword);
+            const cardNumber = encrypt(data.companyCardNumber, key);
+            const cardCVV = encrypt(data.companyCardCVV, key);
             await setDoc(doc(db, "partners", user.user.uid), {
+              id: user.user.uid,
               companyName: data.companyName,
               companyEmail: data.companyEmail,
               companyPhoneNumber: "+971" + data.companyPhoneNumber,
@@ -100,11 +104,28 @@ const SignUp = () => {
                 data.companyCardExpiryMonth + "/" + data.companyCardExpiryYear,
               cardCVV,
               key,
-            }).then(() => {
-              Cookies.set("isAuth", "true");
-              Cookies.set("isPartner", "true");
-              router.push(ROUTES_VERIFICATION_EMAIL);
-            });
+              hashedPassword,
+              contactInfo: [
+                { type: "phone", value: "+971" + data.companyPhoneNumber },
+                { type: "email", value: data.companyEmail },
+              ],
+              billingDates: {
+                latestBilledAt: new Date().toISOString(),
+                nextBillingAt: new Date(
+                  new Date().setMonth(new Date().getMonth() + 1)
+                ).toISOString(),
+              },
+            })
+              .then(() => {
+                Cookies.set("isAuth", "true");
+                Cookies.set("isPartner", "true");
+                router.push(ROUTES_VERIFICATION_EMAIL);
+              })
+              .catch((error) => {
+                console.log(error);
+                toast.error("Something went wrong");
+                deleteUser(user.user);
+              });
           }
         } else {
           return toast.error("Invalid Card Details");
@@ -117,7 +138,7 @@ const SignUp = () => {
     }
   };
   return (
-    <div className="bg-[#626D58] flex flex-col justify-center items-center py-4 px-5 gap-3 w-screen h-screen">
+    <div className="bg-ebony flex flex-col justify-center items-center py-4 px-5 gap-3 w-screen h-screen">
       <form
         className={`bg-lightAccent gap-4 rounded-md px-8 py-6 flex flex-col justify-center items-center`}
         onSubmit={handleSubmit(onSubmit)}

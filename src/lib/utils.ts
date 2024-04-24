@@ -1,7 +1,10 @@
+import bcrypt from "bcryptjs";
 import { FirebaseError } from "firebase/app";
 import { type ClassValue, clsx } from "clsx";
+import { addDays, format, isAfter } from "date-fns";
 import { twMerge } from "tailwind-merge";
 import Cookies from "js-cookie";
+import crypto from "crypto";
 import {
   AuthProvider,
   FacebookAuthProvider,
@@ -12,11 +15,11 @@ import {
   reauthenticateWithPopup,
   unlink,
 } from "firebase/auth";
-import { Provider } from "@/types";
+import { ListDate, Listing, Provider, TimingRange } from "@/types";
 import { toast } from "sonner";
 import { link } from "fs";
 import { auth } from "../../firebase.config";
-import { Resend } from "resend";
+import { DateRange } from "react-day-picker";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -44,16 +47,10 @@ export const checkLinkedProviders = (
   if (user) {
     const providers: Provider[] = [
       { id: 1, provider: "google.com", isLinked: false },
-      { id: 2, provider: "facebook.com", isLinked: false },
-      { id: 3, provider: "apple.com", isLinked: false },
     ];
     user.providerData.forEach((providerData) => {
       if (providerData.providerId === "google.com") {
         providers[0].isLinked = true;
-      } else if (providerData.providerId === "facebook.com") {
-        providers[1].isLinked = true;
-      } else if (providerData.providerId === "apple.com") {
-        providers[2].isLinked = true;
       }
     });
 
@@ -75,8 +72,6 @@ export const handleLinkOrUnlink = async (
         let provider: AuthProvider;
         if (providerId === "google.com") {
           provider = new GoogleAuthProvider();
-        } else if (providerId === "facebook.com") {
-          provider = new FacebookAuthProvider();
         } else {
           // Handle other providers if needed
           return;
@@ -228,7 +223,7 @@ export function validateCreditCard(cardNumber: string): string | boolean {
 
   // Check if the card number contains only digits and has a valid length
   if (!/^\d{16}$/.test(cardNumber)) {
-    return false;
+    //return false;
   }
 
   // Luhn algorithm validation
@@ -244,7 +239,7 @@ export function validateCreditCard(cardNumber: string): string | boolean {
     total += digit;
   }
   if (total % 10 !== 0) {
-    return false;
+    //return false;
   }
 
   // Check card type based on the first few digits (Issuer Identification Number or IIN)
@@ -359,4 +354,142 @@ function getMonthName(month: number): string {
   return months[month];
 }
 
-export const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
+export function hashKey(password: string, SALT_LENGTH: number): string {
+  const salt = crypto.randomBytes(SALT_LENGTH);
+  const hash = crypto.createHash("sha256");
+  hash.update(password + salt); // Add salt to the password before hashing
+  const hashedPassword = hash.digest("hex");
+  return hashedPassword.substring(0, 32); // Truncate the hash to match AES-256 key length
+}
+
+export function encrypt(text: string, key: string): string {
+  const algorithm = "aes-256-cbc"; // AES encryption algorithm
+  const ivLength = 16; // Initialization vector length (required for AES)
+  const iv = crypto.randomBytes(ivLength); // Generate a random initialization vector
+  const cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
+  let encrypted = cipher.update(text, "utf8", "hex");
+  encrypted += cipher.final("hex");
+  return iv.toString("hex") + encrypted; // Return IV + encrypted data
+}
+
+export function decrypt(text: string, key: string): string {
+  const algorithm = "aes-256-cbc"; // AES encryption algorithm
+  const ivLength = 16; // Initialization vector length (required for AES)
+  const iv = Buffer.from(text.slice(0, ivLength * 2), "hex"); // Extract IV from the encrypted text
+  const encryptedText = text.slice(ivLength * 2); // Extract encrypted data
+  const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
+  let decrypted = decipher.update(encryptedText, "hex", "utf8");
+  decrypted += decipher.final("utf8");
+  return decrypted;
+}
+
+export const hashPassword = (password: string) => {
+  return bcrypt.hash(password, 10);
+};
+export const compareHash = (password: string, hash: string) => {
+  return bcrypt.compare(password, hash);
+};
+
+export const getMaxMinPrice = (timings: TimingRange[]) => {
+  let maxPrice = 0;
+  let minPrice = Infinity;
+  timings.forEach((timing) => {
+    if (timing.price > maxPrice) {
+      maxPrice = timing.price;
+    }
+    if (timing.price < minPrice) {
+      minPrice = timing.price;
+    }
+  });
+  return { maxPrice, minPrice };
+};
+
+export const getDuration = (startTime: string, endTime: string): string => {
+  const [startHour, startMinute] = startTime.split(":").map(Number);
+  const [endHour, endMinute] = endTime.split(":").map(Number);
+
+  const startTotalMinutes = startHour * 60 + startMinute;
+  const endTotalMinutes = endHour * 60 + endMinute;
+
+  const durationInMinutes = endTotalMinutes - startTotalMinutes;
+
+  if (durationInMinutes < 60) {
+    return `${durationInMinutes} minutes`;
+  } else {
+    const durationInHours = durationInMinutes / 60;
+    return `${durationInHours} hours`;
+  }
+};
+
+export const haveSameDate = (
+  currentDate: Date,
+  dateToBeComparedTo: { date: string; userID: string }[]
+) => {
+  // Convert currentDate to a string in the format 'YYYY-MM-DD'
+  const currentDateStr = currentDate.toISOString().split("T")[0];
+
+  // Check if any date in dateToBeComparedTo matches the currentDate
+  return dateToBeComparedTo.some(
+    ({ date }) => date.split("T")[0] === currentDateStr
+  );
+};
+
+export const CompareDates = (date1: Date, date2: Date) =>
+  date1.getFullYear() === date2.getFullYear() &&
+  date1.getMonth() === date2.getMonth() &&
+  date1.getDate() === date2.getDate();
+
+export const generateListDates = (
+  dateRange: DateRange,
+  timings: TimingRange[]
+): ListDate[] => {
+  if (!dateRange.from || !dateRange.to) {
+    return [];
+  }
+
+  const generateListDatesRecursive = (
+    currentDate: Date,
+    endDate: Date,
+    list: ListDate[]
+  ): ListDate[] => {
+    if (isAfter(currentDate, endDate)) {
+      return list;
+    }
+
+    const formattedDate = format(currentDate, "yyyy-MM-dd");
+    const listDate: ListDate = {
+      date: formattedDate,
+      timings: timings.map((timing) => ({
+        startTime: timing.startTime,
+        endTime: timing.endTime,
+        price: timing.price,
+        booking: timing.booking,
+      })),
+    };
+
+    return generateListDatesRecursive(addDays(currentDate, 1), endDate, [
+      ...list,
+      listDate,
+    ]);
+  };
+
+  return generateListDatesRecursive(dateRange.from, dateRange.to, []);
+};
+
+export const getPriceRange = (dates: ListDate[]): string => {
+  // Extract all prices from the ListDate array
+  const prices: number[] = dates.reduce((acc: number[], curr: ListDate) => {
+    curr.timings.forEach((timing: TimingRange) => {
+      acc.push(timing.price);
+    });
+    return acc;
+  }, []);
+
+  // Calculate min and max prices
+  const minPrice: number = Math.min(...prices);
+  const maxPrice: number = Math.max(...prices);
+
+  // Return formatted string
+  if (minPrice === maxPrice) return `AED ${minPrice}`;
+  return `AED ${minPrice} - AED ${maxPrice}`;
+};

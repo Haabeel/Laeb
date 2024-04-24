@@ -8,12 +8,14 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Logo from "@/assets/images/logo-nobg.png";
 import Link from "next/link";
-import { ROUTES_HOME } from "../../../../routes";
+import { ROUTES_HOME, ROUTES_PARTNER_DASHBOARD_LIST } from "../../../../routes";
 import AccountInformation from "@/components/Partner/Dashboard/AccountInformation";
 import { doc, getDoc } from "firebase/firestore";
 import { Toaster, toast } from "sonner";
 import { Partner } from "@/types";
 import Settings from "@/components/Partner/Dashboard/Settings";
+import SecurityPrivacy from "@/components/Partner/Dashboard/SecurityPrivacy";
+import Bookings from "@/components/Partner/Dashboard/Bookings";
 
 const PartnerDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -61,7 +63,7 @@ const PartnerDashboard = () => {
       className={`bg-darkPrimary w-screen h-screen overflow-hidden flex flex-col`}
     >
       <nav
-        className={`bg-darkPrimary border-b-1 border-neutral-800 h-[15%] flex justify-between p-5 items-center w-full`}
+        className={`bg-darkPrimary border-b-1 border-neutral-800 h-[15vh] flex justify-between p-5 items-center w-full`}
       >
         <Link href={ROUTES_HOME} className="h-full w-auto">
           <Image
@@ -72,13 +74,21 @@ const PartnerDashboard = () => {
             className="object-fill w-auto h-[80%]"
           />
         </Link>
-        <h1 className="text-2xl text-white">{tab}</h1>
-        <button
-          onClick={() => handleSignOut()}
-          className="bg-darkPrimary px-3 py-2 text-white rounded-md shadow-[-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,78,25,0.15)] hover:shadow-[-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(45,78,255,0.15)] hover:bg-capuut transition-all duration-300 ease-in-out"
-        >
-          Sign out{" "}
-        </button>
+        <h1 className="text-2xl text-white absolute left-1/2">{tab}</h1>
+        <div className="flex gap-2 items-center">
+          <Link
+            href={ROUTES_PARTNER_DASHBOARD_LIST}
+            className="bg-darkPrimary px-3 py-2 text-white rounded-md shadow-[-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,78,25,0.15)] hover:shadow-[-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(45,78,255,0.15)] hover:bg-capuut transition-all duration-300 ease-in-out"
+          >
+            Make a new Listing
+          </Link>
+          <button
+            onClick={() => handleSignOut()}
+            className="bg-darkPrimary px-3 py-2 text-white rounded-md shadow-[-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,78,25,0.15)] hover:shadow-[-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(45,78,255,0.15)] hover:bg-capuut transition-all duration-300 ease-in-out"
+          >
+            Sign out{" "}
+          </button>
+        </div>
       </nav>
       <div className="flex w-full h-full">
         <div className="h-full w-[20%] bg-darkPrimary border-r-2 border-neutral-800 py-3 flex items-center justify-center">
@@ -114,19 +124,19 @@ const PartnerDashboard = () => {
               Security & Privacy
             </li>
             <li
-              onClick={() => setTab("Bookings")}
+              onClick={() => setTab("Listings")}
               className={`hover:text-white text-lightPrimary after:block after:h-[1px] cursor-pointer after:w-0 after:hover:w-full after:transition-all after:duration-300 after:ease-in-out after:bg-white w-fit ${
-                tab === "Bookings"
+                tab === "Listings"
                   ? "text-white after:w-full"
                   : "text-lightPrimary"
               }`}
             >
-              Bookings
+              Listings
             </li>
           </ul>
         </div>
 
-        <div className="h-full w-full shadow-[inset_-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,255,255,0.15)]">
+        <div className="h-[85vh] w-full rounded-lg shadow-[inset_-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,255,255,0.15)] overflow-x-hidden overflow-y-auto">
           {tab === "Account Information" ? (
             <AccountInformation
               user={user}
@@ -135,7 +145,21 @@ const PartnerDashboard = () => {
             />
           ) : tab === "Settings" ? (
             <Settings user={user} partner={partner} setPartner={setPartner} />
-          ) : null}
+          ) : tab === "Security & Privacy" ? (
+            <SecurityPrivacy
+              user={user}
+              partner={partner}
+              setPartner={setPartner}
+            />
+          ) : tab === "Listings" ? (
+            <Bookings user={user} partner={partner} />
+          ) : (
+            <AccountInformation
+              user={user}
+              partner={partner}
+              setPartner={setPartner}
+            />
+          )}
         </div>
       </div>
 

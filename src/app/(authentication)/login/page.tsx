@@ -322,32 +322,13 @@ const Login = () => {
         </button>
         <section className="grid grid-cols-3 gap-5 w-full">
           <button
-            className={`flex gap-2 py-2 px-3 rounded-lg bg-[#FFFFFF] items-center justify-start`}
+            className={`flex col-span-3 gap-2 py-2 px-3 rounded-lg bg-[#FFFFFF] items-center justify-center`}
             type="button"
             onClick={() => handleGoogleSignIn()}
           >
             <FcGoogle className={`h-5 w-5`} />
             <p className={`text-sm text-[#000000] font-semibold`}>
               Continue with google
-            </p>
-          </button>
-          <button
-            className={`flex gap-2 py-2 px-3 rounded-lg bg-[#FFFFFF] items-center justify-start`}
-            type="button"
-            onClick={() => handleFacebookSignIn()}
-          >
-            <FaFacebookSquare className={`h-5 w-5 text-[#0000AA]`} />
-            <p className={`text-sm text-[#000000] font-semibold`}>
-              Continue with facebook
-            </p>
-          </button>
-          <button
-            className={`flex gap-2 py-2 px-3 rounded-lg bg-[#FFFFFF] items-center justify-start`}
-            type="button"
-          >
-            <FaApple className={`h-5 w-5`} />
-            <p className={`text-sm text-[#000000] font-semibold`}>
-              Continue with apple
             </p>
           </button>
         </section>

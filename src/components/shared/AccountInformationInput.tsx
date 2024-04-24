@@ -1,7 +1,10 @@
+import { cn } from "@/utility";
 import { User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { IoIosCloseCircle } from "react-icons/io";
 import { MdEdit } from "react-icons/md";
+import { db } from "../../../firebase.config";
 
 type AccountInformationInputProps = {
   user: User | null;
@@ -17,6 +20,7 @@ type AccountInformationInputProps = {
   editable?: boolean;
   setNeedsUpdate?: React.Dispatch<React.SetStateAction<boolean>>;
   setData?: React.Dispatch<React.SetStateAction<string>>;
+  className?: string;
 };
 
 const AccountInformationInput = ({
@@ -27,6 +31,7 @@ const AccountInformationInput = ({
   editable = false,
   setNeedsUpdate,
   setData,
+  className,
 }: AccountInformationInputProps) => {
   const [value, setValue] = useState(data || "");
   const [isEditing, setIsEditing] = useState(false);
@@ -42,7 +47,9 @@ const AccountInformationInput = ({
         case "firstName":
           return user.displayName?.split(" ")[0] || "";
         case "phoneNumber":
-          return user.phoneNumber ? user.phoneNumber : "";
+          return user.phoneNumber
+            ? user.phoneNumber.slice(0, 4) + " " + user.phoneNumber.slice(4)
+            : "";
         case "password":
           return "********";
         case "fullName":
@@ -63,9 +70,12 @@ const AccountInformationInput = ({
 
   return (
     <div
-      className={`relative flex items-center justify-between bg-lightPrimary pr-2 rounded-md w-[20rem] text-xl ${
-        !user ? "animate-pulse" : ""
-      }`}
+      className={cn(
+        `relative flex items-center justify-between bg-lightPrimary pr-2 rounded-md w-[20rem] text-xl ${
+          !user ? "animate-pulse" : ""
+        }`,
+        className
+      )}
     >
       <input
         id={id}

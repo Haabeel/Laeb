@@ -29,72 +29,7 @@ const AccountInformation = ({
   const [twitter, setTwitter] = useState<string>("");
   const [linkedin, setLinkedin] = useState<string>("");
   const [whatsapp, setWhatsapp] = useState<string>("");
-  const [progress, setProgress] = useState<number>(0);
-  const { edgestore } = useEdgeStore();
-  const [image, setImage] = useState<File | string>();
-  const [url, setUrl] = useState<{ url: string; thumbnailUrl: string | null }>({
-    url: "",
-    thumbnailUrl: null,
-  });
-  const handleProfilePictureChange = async () => {
-    try {
-      if (!image) return;
-      if (typeof image === "string") return;
-      if (!user) return;
-      if (!partner) return;
-      if (
-        partner?.profilePicture != undefined &&
-        partner?.profilePicture?.url.length > 0
-      ) {
-        console.log("working");
-        const res = await edgestore.profilePictures.upload({
-          file: image,
-          onProgressChange: (progress) => {
-            setProgress(progress);
-          },
-          options: {
-            replaceTargetUrl: partner.profilePicture.url,
-            manualFileName: user?.uid + "_profile_picture_" + image.name,
-          },
-        });
-        setUrl({ url: res.url, thumbnailUrl: res.thumbnailUrl });
-        setImage(res.url);
-        await updateProfile(user, { photoURL: url.url });
-        const docRef = doc(db, "partners", user.uid);
-        await updateDoc(docRef, {
-          profilePicture: { url: res.url, thumbnailUrl: res.thumbnailUrl },
-        });
-        setPartner({
-          ...partner,
-          profilePicture: { url: res.url, thumbnailUrl: res.thumbnailUrl },
-        });
-        return toast.success("Image uploaded successfully");
-      }
-      const res = await edgestore.profilePictures.upload({
-        file: image,
-        onProgressChange: (progress) => {
-          setProgress(progress);
-        },
-        options: {
-          manualFileName: user?.uid + "_profile_picture_" + image.name,
-        },
-      });
-      setUrl({ url: res.url, thumbnailUrl: res.thumbnailUrl });
-      setImage(res.url);
-      await updateProfile(user, { photoURL: url.url });
-      const docRef = doc(db, "partners", user.uid);
-      await updateDoc(docRef, {
-        profilePicture: { url: res.url, thumbnailUrl: res.thumbnailUrl },
-      });
-      setPartner({
-        ...partner,
-        profilePicture: { url: res.url, thumbnailUrl: res.thumbnailUrl },
-      });
-      toast.success("Image uploaded successfully");
-    } catch (error) {
-      toast.error("Something went wrong please try again");
-    }
-  };
+
   const handleUpdateCompanyName = async () => {
     try {
       if (!user || !partner) return;
@@ -178,101 +113,59 @@ const AccountInformation = ({
     setTwitter(partner.socialMedia?.twitter || "");
     setLinkedin(partner.socialMedia?.linkedin || "");
     setWhatsapp(partner.socialMedia?.whatsapp || "");
-    setImage(partner.profilePicture?.url || undefined);
   }, [partner]);
   return (
     <div className="flex w-full h-full justify-between gap-10 px-5 items-start py-5">
       <div className="flex flex-col h-full justify-between items-center w-full">
         <div className="flex flex-col h-full w-full justify-start items-center gap-5">
           <h1 className="text-2xl text-white">Account Details</h1>
-          <div className="flex h-full w-full gap-2 justify-center items-center">
-            <div className="flex flex-col h-full w-full justify-start items-center gap-5">
-              <section className="flex flex-col gap-2 text-xl">
-                <label htmlFor="email" className="text-white">
-                  Email
-                </label>
-                <AccountInformationInput
-                  fieldName="email"
-                  id="email"
-                  user={user}
-                />
-              </section>
-              <section className="flex flex-col gap-2 text-xl">
-                <label htmlFor="fullName" className="text-white">
-                  Company Name
-                </label>
-                <AccountInformationInput
-                  fieldName="fullName"
-                  id="fullName"
-                  user={user}
-                  editable
-                  data={companyName}
-                  setData={setCompanyName}
-                  setNeedsUpdate={setNeedsUpdate}
-                />
-              </section>
-              <section className="flex flex-col gap-2 text-xl">
-                <label htmlFor="phoneNumber" className="text-white">
-                  Phone Number
-                </label>
-                <AccountInformationInput
-                  fieldName="phoneNumber"
-                  id="phoneNumber"
-                  user={user}
-                />
-              </section>
-              {needsUpdate && (
-                <button
-                  className="w-full text-white px-3 py-2 rounded-md bg-capuut"
-                  onClick={() => handleUpdateCompanyName()}
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Updating..." : "Update Company Name"}
-                </button>
-              )}
-            </div>
-            <div className="h-full max-h-full flex flex-col gap-2 items-stretch justify-start text-white">
-              <div className="text-center text-lg">Change Profile Picture</div>
-              <SingleImageDropzone
-                value={image}
-                onChange={(file) => setImage(file)}
-                dropzoneOptions={{
-                  maxSize: 2 * 1024 * 1024,
-                }}
-                className={`bg-lightPrimary max-h-full max-w-full h-[210px] w-[210px] ${
-                  !partner &&
-                  "animate-pulse transition-all duration-1000 ease-in-out"
-                } `}
+          <div className="grid grid-cols-2 h-full w-full justify-items-center gap-5">
+            <section className="flex flex-col gap-2 text-xl col-span-2 w-full">
+              <label htmlFor="fullName" className="text-white">
+                Company Name
+              </label>
+              <AccountInformationInput
+                fieldName="fullName"
+                id="fullName"
+                user={user}
+                editable
+                data={companyName}
+                setData={setCompanyName}
+                setNeedsUpdate={setNeedsUpdate}
+                className="w-full"
               />
+            </section>
+            <section className="flex flex-col gap-2 text-xl w-full">
+              <label htmlFor="email" className="text-white">
+                Email
+              </label>
+              <AccountInformationInput
+                fieldName="email"
+                id="email"
+                user={user}
+                className="w-full"
+              />
+            </section>
+            <section className="flex flex-col gap-2 text-xl">
+              <label htmlFor="phoneNumber" className="text-white">
+                Phone Number
+              </label>
+              <AccountInformationInput
+                fieldName="phoneNumber"
+                id="phoneNumber"
+                user={user}
+              />
+            </section>
 
-              <div className=" rounded-full border border-white w-full h-2">
-                <div
-                  className="h-full w-0 transition-all bg-white"
-                  style={{ width: progress + "%" }}
-                />
-              </div>
-
-              {(url.url.length > 0 || partner?.profilePicture) && (
-                <Link
-                  href={
-                    url.url.length > 0
-                      ? url.url
-                      : partner?.profilePicture?.url || ""
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full rounded-lg bg-lightPrimary text-black text-center"
-                >
-                  View Image
-                </Link>
-              )}
+            {needsUpdate && (
               <button
-                className="bg-capuut text-white px-3 py-2 text-lg rounded-lg"
-                onClick={() => handleProfilePictureChange()}
+                className="w-full text-white px-3 py-2 rounded-md bg-capuut"
+                onClick={() => handleUpdateCompanyName()}
+                disabled={isLoading}
               >
-                Upload Image
+                {isLoading ? "Updating..." : "Update Company Name"}
               </button>
-            </div>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-2 h-full w-full justify-items-center place-items-center gap-2 text-sm">
@@ -363,21 +256,21 @@ const AccountInformation = ({
       </div>
       <div className="flex flex-col h-full justify-start items-center gap-5">
         <h1 className="text-2xl text-white">About Us</h1>
-        <section className="flex flex-col gap-2 text-xl">
-          <section className="w-full">
+        <section className="flex flex-col gap-2 text-xl h-full">
+          <section className="w-full h-full">
             <textarea
               value={about}
               onChange={(e) => setAbout(e.target.value)}
-              className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-[30rem] min-h-60 sticky-container-dark ${
+              className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-[30rem] h-[95%] sticky-container-dark ${
                 !partner && "animate-pulse"
               }`}
-              maxLength={500}
+              maxLength={600}
               disabled={!partner}
-              placeholder="Company about us in under 500 words"
+              placeholder="Company about us in under 600 words"
               style={{ resize: "none" }}
             />
             <p className="text-white text-sm w-full text-end">
-              {about.length}/500
+              {about.length}/600
             </p>
           </section>
           <button

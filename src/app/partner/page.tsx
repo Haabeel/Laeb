@@ -9,10 +9,10 @@ import BookingManagement from "@/assets/images/bookingManagement.jpg";
 import profitLoss from "@/assets/images/profitLoss.jpg";
 import customerSupport from "@/assets/images/customerSupport.jpg";
 import LaebLogo from "@/assets/images/logo-nobg.png";
+import logoBg from "@/assets/images/logo.jpg";
 import { StickyScroll } from "@/components/ui/sticky-scroll";
-import { useRouter } from "next/navigation";
 import { WavyBackground } from "@/components/ui/wavy-background";
-import Logo from "@/assets/images/logo-nobg.png";
+import { Toaster } from "sonner";
 type Content = {
   title: string;
   description: string | React.ReactNode;
@@ -20,25 +20,8 @@ type Content = {
 };
 
 const Partner = () => {
-  const string = "Expand Your Reach With";
-
-  const words = stringToWordsArray(
-    string,
-    4,
-    "font-bold uppercase text-[#00AA00]"
-  );
-
-  const router = useRouter();
   const targetRef = useRef<HTMLDivElement>(null);
 
-  const scrollToNextElement = () => {
-    if (targetRef.current) {
-      const { top } = targetRef.current.getBoundingClientRect();
-      const yOffset = window.pageYOffset;
-      const targetY = top + yOffset + 500;
-      document.body.scrollTo({ top: 2000 });
-    }
-  };
   const content: Content[] = [
     {
       title: "Reach a Wider Audience",
@@ -118,7 +101,7 @@ const Partner = () => {
       ),
       content: (
         <Image
-          src={LaebLogo}
+          src={logoBg}
           className="object-cover h-full w-full"
           alt="La'eb Logo"
         />
@@ -146,7 +129,7 @@ const Partner = () => {
             className={`text-6xl font-semibold tracking-wide place-self-start h-full`}
           >
             <Image
-              src={Logo}
+              src={LaebLogo}
               alt="logo"
               width={1000}
               height={1000}
