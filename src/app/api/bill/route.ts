@@ -13,7 +13,7 @@ const authenticate = (req: NextRequest) => {
   if (
     authKey !== `${NEXT_PUBLIC_ADMIN_USERNAME}:${NEXT_PUBLIC_ADMIN_PASSWORD}`
   ) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response("Unauthorized auth", { status: 401 });
   }
 };
 
@@ -74,6 +74,7 @@ export const POST = async (req: NextRequest) => {
   } finally {
     signOut(auth);
   }
+  return new Response("Unauthorized", { status: 401 });
 };
 
 const isToday = (date: Date) => {
