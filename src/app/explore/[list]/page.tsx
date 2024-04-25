@@ -53,6 +53,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { RxHamburgerMenu } from "react-icons/rx";
+import { Switch } from "@/components/ui/switch";
 
 const cardFormSchema = z.object({
   cardHolder: z.string().min(3, "Name is too short"),
@@ -71,6 +72,7 @@ const List = ({ params }: { params: { list: string } }) => {
   const [date, setDate] = useState<Date>();
   const [paymentOptions, setPaymentOptions] = useState<"card" | "cash">("card");
   const [loading, setLoading] = useState(false);
+  const [checked, setChecked] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const {
     register,
@@ -98,7 +100,7 @@ const List = ({ params }: { params: { list: string } }) => {
       toast.error("Card expired");
       return;
     }
-    const isValidCardNumber = validateCreditCard(data.cardNumber);
+    const isValidCardNumber = validateCreditCard(data.cardNumber, checked);
     if (!isValidCardNumber) {
       toast.error("Invalid card number");
       return;
@@ -217,8 +219,8 @@ const List = ({ params }: { params: { list: string } }) => {
           partner.companyPhoneNumber,
         listingPrice: timing.price.toString(),
         listingTime: `${timing.startTime} - ${timing.endTime}`,
-        listingUrl: `https://laebuae@gmail.com/explore/${listingId}`,
-        partnerPage: `https://laebuae@gmail.com/partner/${partner.id}`,
+        listingUrl: `https://laeb.vercel.app/explore/${listingId}`,
+        partnerPage: `https://laeb.vercel.app/partner/${partner.id}`,
         paymentMethod: paymentOptions,
         recieptID: pUser.user.uid.slice(0, 5),
         userName: pUser.user.displayName ?? pUser.user.email ?? "User",
@@ -234,7 +236,6 @@ const List = ({ params }: { params: { list: string } }) => {
         body: JSON.stringify(body),
       })
         .then((res) => {
-          console.log(res.json());
           toast.success(
             "Booking successful; Receipt has been sent to your email account."
           );
@@ -628,6 +629,19 @@ const List = ({ params }: { params: { list: string } }) => {
                                     </RadioGroup>
                                   </section>
                                 </div>
+                                <section className="flex w-full items-center justify-between">
+                                  <p className="text-xs text-white">
+                                    {
+                                      "The validation for the card number validity has been turned off for the tester's convinience. Toggle ->"
+                                    }
+                                  </p>
+                                  <Switch
+                                    defaultChecked={false}
+                                    onCheckedChange={(check) =>
+                                      setChecked(check)
+                                    }
+                                  />
+                                </section>
                                 {paymentOptions === "card" && (
                                   <form
                                     onSubmit={handleFormSubmit(timing)}
@@ -668,6 +682,7 @@ const List = ({ params }: { params: { list: string } }) => {
                                         className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-full focus:shadow-[rgba(50,50,93,0.25)_0px_6px_12px_-2px,_rgba(0,0,0,0.3)_0px_3px_7px_-3px]`}
                                         {...register("cardNumber")}
                                       />
+
                                       {errors.cardNumber && (
                                         <p className="text-red-500 text-sm">
                                           {errors.cardNumber.message}

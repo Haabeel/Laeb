@@ -27,6 +27,7 @@ import { auth, db } from "../../../../firebase.config";
 import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { ROUTES_VERIFICATION_EMAIL } from "../../../../routes";
+import { Switch } from "@/components/ui/switch";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -58,6 +59,7 @@ const SignUp = () => {
   } = useForm<PartnerUpFormFields>({
     resolver: zodResolver(partnerUpFormSchema),
   });
+  const [checked, setChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const onSubmit = async (data: PartnerUpFormFields) => {
@@ -75,7 +77,8 @@ const SignUp = () => {
             getValues("companyCardExpiryMonth") +
               "/" +
               getValues("companyCardExpiryYear"),
-            getValues("companyCardCVV")
+            getValues("companyCardCVV"),
+            checked
           );
         if (typeof isCardValid !== "boolean" && isCardValid) {
           const cardType = isCardValid.cardType;
@@ -254,6 +257,17 @@ const SignUp = () => {
                 {...register("companyCardNumber")}
                 className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-full focus:shadow-[rgba(50,50,93,0.25)_0px_6px_12px_-2px,_rgba(0,0,0,0.3)_0px_3px_7px_-3px]`}
               />
+              <section className="flex w-full items-center justify-between">
+                <p className="text-sm text-black">
+                  {
+                    "The validation for the card number validity has been turned off for the tester's convinience. Toggle ->"
+                  }
+                </p>
+                <Switch
+                  defaultChecked={false}
+                  onCheckedChange={(check) => setChecked(check)}
+                />
+              </section>
               {errors.companyCardNumber && (
                 <p className={`text-xs text-[#000000]`}>
                   {errors.companyCardNumber.message}

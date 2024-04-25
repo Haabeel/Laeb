@@ -220,13 +220,16 @@ export function stringToWordsArray(
   }));
 }
 
-export function validateCreditCard(cardNumber: string): string | boolean {
+export function validateCreditCard(
+  cardNumber: string,
+  checked: boolean
+): string | boolean {
   // Remove spaces and dashes from the card number
   cardNumber = cardNumber.replace(/ /g, "").replace(/-/g, "");
 
   // Check if the card number contains only digits and has a valid length
   if (!/^\d{16}$/.test(cardNumber)) {
-    //return false;
+    return false;
   }
 
   // Luhn algorithm validation
@@ -242,7 +245,9 @@ export function validateCreditCard(cardNumber: string): string | boolean {
     total += digit;
   }
   if (total % 10 !== 0) {
-    //return false;
+    if (!checked) {
+      return false;
+    }
   }
 
   // Check card type based on the first few digits (Issuer Identification Number or IIN)
@@ -282,10 +287,11 @@ export function validateCreditCard(cardNumber: string): string | boolean {
 export function validateCreditCardDetails(
   cardNumber: string,
   expiryDate: string,
-  cvv: string
+  cvv: string,
+  checked: boolean
 ): boolean | { cardType: string; isValid: boolean } {
   // Validate card number
-  if (!validateCreditCard(cardNumber)) {
+  if (!validateCreditCard(cardNumber, checked)) {
     return false;
   }
 
@@ -308,7 +314,10 @@ export function validateCreditCardDetails(
     return false;
   }
 
-  return { cardType: validateCreditCard(cardNumber) as string, isValid: true };
+  return {
+    cardType: validateCreditCard(cardNumber, checked) as string,
+    isValid: true,
+  };
 }
 export const calculateNextBillingDate = (latestBilledAt: Date): Date => {
   const nextBillingDate = new Date(latestBilledAt);
