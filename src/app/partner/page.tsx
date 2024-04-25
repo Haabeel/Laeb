@@ -122,7 +122,7 @@ const Partner = () => {
         className={`flex flex-col items-center justify-center w-full px-5 py-3 h-screen`}
       >
         <nav
-          className={`grid grid-cols-3 place-items-center w-[50%] text-white h-[8%] fixed top-3 left-4 `}
+          className={`grid grid-cols-3 place-items-center w-full text-white sm:h-[8%] h-[4%] fixed top-3 left-4`}
         >
           <Link
             href={"/"}
@@ -140,14 +140,19 @@ const Partner = () => {
         <main
           className={`flex justify-center items-center flex-col gap-4 w-full h-full`}
         >
-          <span className="text-4xl text-white tracking-wide font-bold flex gap-3">
+          <span className="sm:text-4xl text-xl text-white tracking-wide font-bold flex gap-3">
             <p>Expand</p>
             <p>Your</p>
             <p>Reach</p>
             <p>With</p>
             <p className="text-darkSecondary">{"LA'EB"}</p>
           </span>
-          {<StickyScroll content={content} />}
+          {
+            <StickyScroll
+              content={content}
+              contentClassName="sm:top-10 top-5"
+            />
+          }
         </main>
       </div>
     </WavyBackground>

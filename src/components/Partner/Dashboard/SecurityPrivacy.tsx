@@ -165,8 +165,8 @@ const SecurityPrivacy = ({ user, partner, setPartner }: props) => {
     }
   }, [partner]);
   return (
-    <div className="flex flex-col w-full h-full items-center justify-center p-5">
-      <div className="flex flex-col items-center w-1/2 bg-ebony justify-center gap-3 rounded-lg px-5 py-3">
+    <div className="flex flex-col w-full h-full items-center p-5">
+      <div className="flex flex-col items-center lg:w-1/2 w-full bg-ebony justify-center gap-3 rounded-lg px-5 py-3">
         <div className="flex flex-col justify-center items-center w-full gap-2">
           <label htmlFor="email" className="text-lg text-white w-full">
             Change your email address
@@ -283,7 +283,7 @@ const SecurityPrivacy = ({ user, partner, setPartner }: props) => {
                 autoComplete="off"
               />
               <DialogClose
-                className="bg-darkPrimary w-full text-white px-3 py-2 rounded-lg"
+                className="bg-darkAccent w-full text-darkPrimary px-3 py-2 rounded-lg"
                 onClick={() => authenticatePasswordAndDecrypt()}
               >
                 View Card Details
@@ -318,7 +318,7 @@ const SecurityPrivacy = ({ user, partner, setPartner }: props) => {
                     placeholder="*******"
                   />
                 </div>
-                <section className="grid grid-rows-3 gap-5 w-full">
+                <section className="gap-5 w-full">
                   <button
                     className={`flex gap-2 py-2 px-3 w-full rounded-lg bg-[#FFFFFF] items-center justify-start`}
                     type="button"

@@ -115,11 +115,11 @@ const AccountInformation = ({
     setWhatsapp(partner.socialMedia?.whatsapp || "");
   }, [partner]);
   return (
-    <div className="flex w-full h-full justify-between gap-10 px-5 items-start py-5">
+    <div className="flex lg:flex-row flex-col w-full h-full justify-between gap-10 px-5 items-start py-5 overflow-y-auto overflow-x-hidden lg:overflow-hidden">
       <div className="flex flex-col h-full justify-between items-center w-full">
         <div className="flex flex-col h-full w-full justify-start items-center gap-5">
           <h1 className="text-2xl text-white">Account Details</h1>
-          <div className="grid grid-cols-2 h-full w-full justify-items-center gap-5">
+          <div className="lg:grid lg:grid-cols-2 flex flex-col items-center h-full w-full lg:justify-items-center gap-5">
             <section className="flex flex-col gap-2 text-xl col-span-2 w-full">
               <label htmlFor="fullName" className="text-white">
                 Company Name
@@ -146,7 +146,7 @@ const AccountInformation = ({
                 className="w-full"
               />
             </section>
-            <section className="flex flex-col gap-2 text-xl">
+            <section className="flex flex-col gap-2 text-xl w-full">
               <label htmlFor="phoneNumber" className="text-white">
                 Phone Number
               </label>
@@ -154,6 +154,7 @@ const AccountInformation = ({
                 fieldName="phoneNumber"
                 id="phoneNumber"
                 user={user}
+                className="w-full"
               />
             </section>
 
@@ -168,7 +169,7 @@ const AccountInformation = ({
             )}
           </div>
         </div>
-        <div className="grid grid-cols-2 h-full w-full justify-items-center place-items-center gap-2 text-sm">
+        <div className="lg:grid hidden grid-cols-2 h-full w-full justify-items-center place-items-center gap-2 text-sm">
           <h1 className="text-2xl text-white col-span-2">Social Accounts</h1>
           <section className="flex justify-center items-center gap-2 w-full">
             <label htmlFor="instagram" className="text-white">
@@ -254,14 +255,15 @@ const AccountInformation = ({
           </button>
         </div>
       </div>
-      <div className="flex flex-col h-full justify-start items-center gap-5">
+      <div className="flex flex-col h-full w-full justify-start items-center gap-5">
         <h1 className="text-2xl text-white">About Us</h1>
-        <section className="flex flex-col gap-2 text-xl h-full">
+        <section className="flex flex-col gap-2 text-xl h-full w-full">
           <section className="w-full h-full">
             <textarea
               value={about}
               onChange={(e) => setAbout(e.target.value)}
-              className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-[30rem] h-[95%] sticky-container-dark ${
+              className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none lg:w-[30rem] w-full lg:h-[95%]
+              h-[20rem] min-h-64 sticky-container-dark ${
                 !partner && "animate-pulse"
               }`}
               maxLength={600}
@@ -285,6 +287,91 @@ const AccountInformation = ({
               : "Loading..."}
           </button>
         </section>
+      </div>
+      <div className="flex flex-col items-center lg:hidden h-full w-full gap-2 text-sm">
+        <h1 className="text-2xl text-white col-span-2">Social Accounts</h1>
+        <section className="flex justify-center items-center gap-2 w-full">
+          <label htmlFor="instagram" className="text-white">
+            <IoLogoInstagram className="w-11 h-11" />
+          </label>
+          <input
+            onChange={(e) => setInstagram(e.target.value)}
+            placeholder={"Enter the url to your instagram account"}
+            type="text"
+            id="instagram"
+            value={instagram || ""}
+            className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-full ${
+              !partner && "animate-pulse"
+            }`}
+          />
+        </section>
+        <section className="flex justify-center items-center gap-2 w-full">
+          <label htmlFor="facebook" className="text-white">
+            <FaFacebookSquare className="w-11 h-11" />
+          </label>
+          <input
+            onChange={(e) => setFacebook(e.target.value)}
+            placeholder={"Enter the url to your facebook account"}
+            id="facebook"
+            type="text"
+            value={facebook || ""}
+            className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-full ${
+              !partner && "animate-pulse"
+            }`}
+          />
+        </section>
+
+        <section className="flex justify-center items-center gap-2 w-full">
+          <label htmlFor="twitter" className="text-white">
+            <FaSquareXTwitter className="w-11 h-11" />
+          </label>
+          <input
+            onChange={(e) => setTwitter(e.target.value)}
+            placeholder={"Enter the url to your X / twitter account"}
+            id="twitter"
+            type="text"
+            value={twitter || ""}
+            className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-full ${
+              !partner && "animate-pulse"
+            }`}
+          />
+        </section>
+        <section className="flex justify-center items-center gap-2 w-full">
+          <label htmlFor="linkedin" className="text-white">
+            <FaLinkedin className="w-11 h-11" />
+          </label>
+          <input
+            onChange={(e) => setLinkedin(e.target.value)}
+            placeholder={"Enter the url to your linkedIn account"}
+            id="linkedin"
+            type="text"
+            value={linkedin || ""}
+            className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-full ${
+              !partner && "animate-pulse"
+            }`}
+          />
+        </section>
+        <section className="flex justify-center items-center gap-2 w-full">
+          <label htmlFor="whatsapp" className="text-white">
+            <FaWhatsapp className="w-11 h-11" />
+          </label>
+          <input
+            onChange={(e) => setWhatsapp(e.target.value)}
+            placeholder={"Enter the phone of your whatsapp account"}
+            id="whatsapp"
+            type="text"
+            value={whatsapp || ""}
+            className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-full ${
+              !partner && "animate-pulse"
+            }`}
+          />
+        </section>
+        <button
+          className="w-full text-white px-3 py-2 rounded-md bg-capuut"
+          onClick={() => updateSocials()}
+        >
+          {isLoading ? "Updating..." : "Update Socials"}
+        </button>
       </div>
     </div>
   );

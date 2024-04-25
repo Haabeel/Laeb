@@ -56,7 +56,7 @@ export const POST = async (req: NextRequest) => {
 
       return new Response("success", { status: 200 });
     } catch (error) {
-      return new Response("error", { status: 500 });
+      return new Response(error as string, { status: 500 });
     }
   }
   return new Response("Unauthorized", { status: 401 });

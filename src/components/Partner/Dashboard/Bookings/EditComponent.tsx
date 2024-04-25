@@ -10,17 +10,20 @@ import { DateRange } from "react-day-picker";
 import TimingRanges from "@/components/ui/TimingRangePicker";
 import { generateListDates } from "@/lib/utils";
 import { toast } from "sonner";
+import { cn } from "@/utility";
 
 const EditComponent = ({
   selectedListing,
   setSelectedListing,
   listings,
   setListings,
+  className,
 }: {
   selectedListing: Listing | null;
   setSelectedListing: React.Dispatch<React.SetStateAction<Listing | null>>;
   listings: Listing[] | null;
   setListings: React.Dispatch<React.SetStateAction<Listing[] | null>>;
+  className?: string;
 }) => {
   const [categories, setCategories] = useState<string[]>([]);
   const [dbCategories, setDbCategories] = useState<string[]>([]);
@@ -106,7 +109,12 @@ const EditComponent = ({
   }, [dbSports, selectedListing?.sport]);
 
   return (
-    <div className="border border-dashed border-lightPrimary rounded-lg p-5 h-full overflow-y-auto sticky-container">
+    <div
+      className={cn(
+        "lg:border lg:border-dashed lg:border-lightPrimary bg-darkPrimary rounded-lg p-5 lg:block hidden h-full overflow-y-auto lg:sticky-container",
+        className
+      )}
+    >
       {!selectedListing && (
         <div className="flex items-center justify-center w-full h-full text-white text-2xl">
           Select a listing to edit
@@ -114,7 +122,7 @@ const EditComponent = ({
       )}
       {selectedListing && (
         <div className="flex flex-col items-center justify-between gap-2 w-full h-full">
-          <section className="flex items-center justify-between gap-3 w-full h-full">
+          <section className="flex lg:flex-row flex-col items-center justify-between gap-3 w-full h-full">
             <section className="w-full flex items-start flex-col justify-center gap-1 text-lightPrimary text-base font-bold">
               <label>Listing Name</label>
               <input
@@ -168,7 +176,7 @@ const EditComponent = ({
               className="rounded-lg border border-lightPrimary font-normal"
               buttonClassName="bg-ebony text-lightPrimary rounded-md"
               rootClassName="gap-1"
-              categoriesClassName="gap-1 grid-cols-4"
+              categoriesClassName="gap-1 lg:grid-cols-4 grid-cols-3"
             />
           </section>
 

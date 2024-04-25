@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../../../firebase.config";
 import { doc, getDoc } from "firebase/firestore";
+import { RxHamburgerMenu } from "react-icons/rx";
 const Layout = ({
   children,
 }: Readonly<{
@@ -15,6 +16,7 @@ const Layout = ({
 }>) => {
   const [isAuth, setIsAuth] = useState(false);
   const [isPartner, setIsPartner] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   useEffect(() => {
     const isAuth = Cookies.get("isAuth");
     const isPartner = Cookies.get("isPartner");
@@ -56,7 +58,7 @@ const Layout = ({
             className="object-cover w-full h-full"
           />
         </Link>
-        <section className="flex items-center justify-between gap-10">
+        <section className="sm:flex hidden items-center justify-between gap-10">
           <Link
             href={"/explore"}
             className="text-lg text-bold text-center text-white bg-night px-3 py-2 rounded-md"
@@ -97,6 +99,7 @@ const Layout = ({
             ))}
         </section>
       </nav>
+
       {children}
       <Toaster richColors />
     </div>

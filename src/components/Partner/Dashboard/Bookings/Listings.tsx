@@ -8,7 +8,7 @@ import Image from "next/image";
 import { format, isSameDay, set } from "date-fns";
 import { FaLocationDot, FaLocationPin, FaMoneyBill } from "react-icons/fa6";
 import { BsCalendar, BsClock, BsPhone } from "react-icons/bs";
-import { getPriceRange } from "@/lib/utils";
+import { getPriceRange, handleEditListingButton } from "@/lib/utils";
 import Link from "next/link";
 import DropdownMenu from "@/components/shared/DropdownMenu";
 import { DnDProvider } from "@/lib/DnDContext";
@@ -16,6 +16,7 @@ import { DndProvider, useDrag } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTrigger,
@@ -25,6 +26,8 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { MdAccountBox, MdEmail } from "react-icons/md";
 import { toast } from "sonner";
 import Field from "@/components/shared/Field";
+import EditComponent from "./EditComponent";
+import { DateRange } from "react-day-picker";
 const Listings = ({
   user,
   partner,
@@ -33,6 +36,7 @@ const Listings = ({
   setListings,
   loading,
   setLoading,
+  selectedListing,
 }: {
   user: User | null;
   partner: Partner | null;
@@ -41,6 +45,7 @@ const Listings = ({
   setListings: React.Dispatch<React.SetStateAction<Listing[] | null>>;
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedListing: Listing | null;
 }) => {
   const [navTab, setNavTab] = useState<"Closed" | "Open" | "Upcoming">("Open");
   const [openListings, setOpenListings] = useState<Listing[]>([]);
@@ -115,7 +120,7 @@ const Listings = ({
 
   return (
     <div className="w-full h-full items-center justify-center p-4 rounded-lg border flex flex-col gap-5 overflow-y-auto">
-      <div className="w-full relative flex items-center justify-end">
+      <div className="w-full relative flex lg:flex-row items-end justify-end flex-col-reverse gap-1 lg:gap-0">
         <DashboardNav
           setActiveTab={
             setNavTab as React.Dispatch<React.SetStateAction<string>>
@@ -123,7 +128,7 @@ const Listings = ({
           activeTab={navTab}
           tabs={["Closed", "Open", "Upcoming"]}
           layoutId="BookingsNav"
-          className="absolute left-1/2 transform -translate-x-1/2 text-sm gap-5"
+          className="lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2 text-sm gap-5 w-full"
         />
         <DropdownMenu
           data={view}
@@ -138,7 +143,9 @@ const Listings = ({
       </div>
       <div
         className={`${
-          view === "Detailed" ? `grid grid-cols-${items}` : "grid grid-flow-col"
+          view === "Detailed"
+            ? `lg:grid lg:grid-cols-${items} sm:grid sm:grid-cols-2 flex flex-col`
+            : "lg:grid lg:grid-flow-col flex flex-col"
         } w-full h-full gap-3 overflow-y-auto rounded-lg`}
       >
         {loading ? (
@@ -164,6 +171,7 @@ const Listings = ({
                       setSelectedListing={setSelectedListing}
                       listings={listings}
                       setListings={setListings}
+                      selectedListing={selectedListing}
                     />
                   );
                 })
@@ -182,6 +190,7 @@ const Listings = ({
                     setSelectedListing={setSelectedListing}
                     listings={listings}
                     setListings={setListings}
+                    selectedListing={selectedListing}
                   />
                 ))
               ) : (
@@ -199,6 +208,7 @@ const Listings = ({
                     setSelectedListing={setSelectedListing}
                     listings={listings}
                     setListings={setListings}
+                    selectedListing={selectedListing}
                   />
                 ))
               ) : (
@@ -219,13 +229,17 @@ const ListingCard = ({
   setSelectedListing,
   listings,
   setListings,
+  selectedListing,
 }: {
   listing: Listing;
   listings: Listing[] | null;
   setListings: React.Dispatch<React.SetStateAction<Listing[] | null>>;
   view: "Detailed" | "List";
   setSelectedListing: React.Dispatch<React.SetStateAction<Listing | null>>;
+  selectedListing: Listing | null;
 }) => {
+  const [date, setDate] = useState<DateRange | undefined>();
+
   return (
     <div
       className={`p-2 rounded-md bg-lightPrimary text-darkPrimary flex flex-col items-start text-sm gap-2 w-full ${
@@ -285,10 +299,30 @@ const ListingCard = ({
         </Link>
         <button
           onClick={() => setSelectedListing(listing)}
-          className="bg-night transition-all duration-500 ease-in-out w-full py-1.5 text-white font-bold text-sm rounded-md text-center shadow-sm shadow-black"
+          className="bg-night transition-all duration-500 ease-in-out w-full py-1.5 text-white font-bold text-sm rounded-md text-center shadow-sm shadow-black lg:block hidden"
         >
           Edit Listing
         </button>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <button
+              onClick={() => setSelectedListing(listing)}
+              className="bg-night transition-all duration-500 ease-in-out w-full py-1.5 text-white font-bold text-sm rounded-md text-center shadow-sm shadow-black lg:hidden block"
+            >
+              Edit Listing
+            </button>
+          </DialogTrigger>
+          <DialogContent className="w-full h-full bg-darkPrimary text-lightPrimary">
+            <EditComponent
+              listings={listings}
+              setListings={setListings}
+              selectedListing={selectedListing}
+              setSelectedListing={setSelectedListing}
+              className="lg:hidden block"
+            />
+          </DialogContent>
+        </Dialog>
         <AdditionalDetails listing={listing} />
         {listings && (
           <DeleteListing
@@ -372,13 +406,13 @@ const AdditionalDetails = ({ listing }: { listing: Listing }) => {
           Additonal Details
         </button>
       </DialogTrigger>
-      <DialogContent className="flex flex-col items-center justify-center bg-darkPrimary text-lightPrimary min-w-max">
-        <DialogHeader className="text-2xl sm:text-center w-full font-bold">
+      <DialogContent className="flex flex-col items-center justify-start bg-darkPrimary text-lightPrimary lg:min-w-max lg:h-auto h-full w-full overflow-y-auto overflow-x-hidden lg:overflow-hidden">
+        <DialogHeader className="text-2xl lg:text-center w-full font-bold">
           Additional Details
         </DialogHeader>
         <div className="flex flex-col items-center justify-center gap-5">
-          <div className="flex h-full items-start justify-between gap-2">
-            <section className="flex flex-col items-center justify-center gap-2 h-full">
+          <div className="flex lg:flex-row flex-col h-full items-start justify-between gap-2">
+            <section className="flex flex-col items-center justify-center gap-2 h-full lg:w-auto w-full">
               <h1 className="text-lg font-bold">Select a Date</h1>
               <Calendar
                 mode="single"
@@ -505,7 +539,7 @@ const DeleteListing = ({
         </button>
       </DialogTrigger>
       <DialogContent className="flex flex-col items-center justify-center bg-darkPrimary text-lightPrimary min-w-max">
-        <DialogHeader className="text-2xl sm:text-center w-full font-bold">
+        <DialogHeader className="text-2xl lg:text-center w-full font-bold">
           Delete Listing
         </DialogHeader>
         <div className="flex flex-col items-center justify-center gap-5">

@@ -13,13 +13,16 @@ import {
   UserCredential,
   linkWithPopup,
   reauthenticateWithPopup,
+  signInWithPopup,
   unlink,
 } from "firebase/auth";
 import { ListDate, Listing, Provider, TimingRange } from "@/types";
 import { toast } from "sonner";
 import { link } from "fs";
-import { auth } from "../../firebase.config";
+import { auth, db } from "../../firebase.config";
 import { DateRange } from "react-day-picker";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -492,4 +495,94 @@ export const getPriceRange = (dates: ListDate[]): string => {
   // Return formatted string
   if (minPrice === maxPrice) return `AED ${minPrice}`;
   return `AED ${minPrice} - AED ${maxPrice}`;
+};
+
+export const handleGoogleSignIn = async (router: AppRouterInstance) => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const signInResult = await signInWithPopup(auth, provider);
+
+    if (signInResult.user) {
+      const user = signInResult.user;
+      const userId = user.uid;
+
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnapshot = await getDoc(userDocRef);
+
+      if (userDocSnapshot.exists()) {
+        // User document exists, proceed with sign in
+        setUpCookies(signInResult, false);
+        router.push("/dashboard");
+      } else {
+        const docRef = doc(db, "partners", userId);
+        const docSnapshot = await getDoc(docRef);
+        if (docSnapshot.exists()) {
+          setUpCookies(signInResult, true);
+          router.push("/partner/dashboard");
+        } else {
+          const userData = {
+            firstName: user.displayName?.split(" ")[0] || "",
+            lastName: user.displayName?.split(" ")[1] || "",
+            email: user.email || "",
+            phoneNumber: null,
+            emailSubscription: false,
+            preferredEmirate: null,
+            preferredDistrict: null,
+          };
+
+          await setDoc(userDocRef, userData);
+
+          setUpCookies(signInResult, false);
+          router.push("/dashboard");
+        }
+        // User document doesn't exist, create a new one
+      }
+    } else {
+      // Handle error if user is null
+      console.error("User is null");
+      toast.error("Sign in failed. Please try again.");
+    }
+  } catch (error: any) {
+    console.error(error);
+    toast.error(error.message || "An error occurred. Please try again.");
+  }
+};
+
+export const handleEditListingButton = async (
+  listings: Listing[] | null,
+  selectedListing: Listing | null,
+  date: DateRange | undefined,
+  timingRanges: TimingRange[],
+  setSelectedListing: React.Dispatch<React.SetStateAction<Listing | null>>,
+  categories: string[],
+  setListings: React.Dispatch<React.SetStateAction<Listing[] | null>>
+) => {
+  if (listings === null) return;
+  if (selectedListing) {
+    if (!date || !date.from) return toast.error("Please select a date range");
+    toast.loading("Updating the listing...");
+    const dates = generateListDates(date, timingRanges);
+    setSelectedListing({
+      ...selectedListing,
+      categories,
+      dates,
+    });
+    const docRef = doc(db, "listings", selectedListing.id as string);
+    try {
+      await updateDoc(docRef, selectedListing);
+      const updatedListings = listings.map((listing) => {
+        if (listing.id === selectedListing.id) {
+          return selectedListing;
+        }
+        return listing;
+      });
+      setListings(updatedListings);
+      toast.success("Listing updated successfully");
+      setSelectedListing(null);
+    } catch {
+      toast.error("Failed to update listing");
+    } finally {
+      toast.dismiss();
+    }
+  }
 };

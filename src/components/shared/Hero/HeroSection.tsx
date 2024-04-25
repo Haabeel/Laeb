@@ -8,15 +8,27 @@ import { motion } from "framer-motion";
 import Cookies from "js-cookie";
 import Link from "next/link";
 import { ROUTES_EXPLORE } from "../../../../routes";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../../../../firebase.config";
 const AntonFont = Anton({ weight: "400", subsets: ["latin"] });
 const InterFont = Inter({ weight: "400", subsets: ["latin"] });
-const HeroSection = () => {
-  const [auth, setAuth] = useState(false);
 
+const HeroSection = () => {
+  const [mAuth, setmAuth] = useState(false);
+  const [link, setLink] = useState("/login");
+  useEffect(() => {
+    onAuthStateChanged(auth, (mUser) => {
+      if (mUser) {
+        setLink("/dashboard");
+      } else {
+        setLink("/login");
+      }
+    });
+  }, []);
   useEffect(() => {
     const isAuth = Cookies.get("isAuth");
     if (isAuth) {
-      setAuth(true);
+      setmAuth(true);
     }
   }, []);
 
@@ -25,9 +37,9 @@ const HeroSection = () => {
 
   return (
     <main className={`flex rounded m-4 h-[90%] py-5 px-3 gap-3`}>
-      <section className={`flex-1 flex flex-col gap-14`}>
+      <section className={`flex-1 flex flex-col sm:gap-14 gap-7`}>
         <h1
-          className={`text-9xl selection:bg-darkSecondary ${
+          className={`text-[5.5rem] leading-[1] sm:text-9xl selection:bg-darkSecondary ${
             AntonFont.className
           } font-extrabold tracking-tight ${"text-darkAccent"}`}
         >
@@ -39,12 +51,12 @@ const HeroSection = () => {
         <p
           className={`${
             InterFont.className
-          } selection:bg-darkSecondary text-lg ${"text-darkAccent"}`}
+          } selection:bg-darkSecondary text-lg  ${"text-darkAccent"}`}
         >
           {para}
         </p>
         <div className="flex justify-center items-center gap-3">
-          {!auth && (
+          {!mAuth && (
             <Link
               href={"/register"}
               className={`text-md w-full flex justify-center gap-2 items-center   ${
@@ -66,6 +78,28 @@ const HeroSection = () => {
             } border py-2 px-3 rounded-xl text-center ${"hover:bg-darkSecondary text-darkSecondary hover:text-darkAccent hover:border-darkSecondary"} transition-colors duration-200 ease-in`}
           >
             Explore
+          </Link>
+        </div>
+        <div
+          className={`items-center gap-3 mr-5 sm:hidden flex flex-col justify-between w-full`}
+        >
+          {link == "/login" && (
+            <Link
+              href={"/partner"}
+              className={`text-md text-center ${
+                InterFont.className
+              } border py-2 px-3 rounded-xl w-full border-darkSecondary ${"hover:bg-darkSecondary text-darkSecondary hover:text-darkAccent"} transition-colors duration-200 ease-in`}
+            >
+              Become a partner
+            </Link>
+          )}
+          <Link
+            href={link}
+            className={`text-md text-center ${
+              InterFont.className
+            } border py-2 px-3 rounded-xl w-full border-darkSecondary ${"hover:bg-darkSecondary text-darkSecondary hover:text-darkAccent hover:border-darkSecondary"} transition-colors duration-200 ease-in`}
+          >
+            {link == "/login" ? "Sign in" : "Dashboard"}
           </Link>
         </div>
       </section>

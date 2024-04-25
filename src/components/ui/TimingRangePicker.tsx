@@ -124,7 +124,7 @@ const TimingRanges: React.FC<TimingRangesProps> = ({
     <div className="flex w-full flex-col items-center justify-start gap-2">
       <h2 className="w-full">Timing Ranges</h2>
       {timingRanges.length > 0 && (
-        <div className="grid w-full grid-cols-3 gap-2 overflow-y-auto">
+        <div className="grid w-full xl:grid-cols-3 grid-cols-2 gap-2 overflow-y-auto">
           {timingRanges.map((range, index) => (
             <div
               key={index}
@@ -136,14 +136,14 @@ const TimingRanges: React.FC<TimingRangesProps> = ({
           ))}
         </div>
       )}
-      <div className="flex gap-3 items-center justify-between w-full">
+      <div className="flex xl:flex-row flex-col gap-3 items-center justify-between w-full">
         <section className="flex flex-col gap-1 w-full">
           <label htmlFor="startTime">Start time</label>
           <input
             type="time"
             id="startTime"
             value={newTimingRange.startTime}
-            className="rounded-lg bg-lightPrimary px-2 py-1 outline-none focus:outline-none selection:bg-darkPrimary selection:text-lightPrimary text-darkPrimary"
+            className="rounded-lg bg-lightPrimary w-full px-2 py-1 outline-none focus:outline-none selection:bg-darkPrimary selection:text-lightPrimary text-darkPrimary"
             onChange={(e) =>
               setNewTimingRange({
                 ...newTimingRange,
@@ -158,7 +158,7 @@ const TimingRanges: React.FC<TimingRangesProps> = ({
             type="time"
             id="endTime"
             value={newTimingRange.endTime}
-            className="rounded-lg bg-lightPrimary px-2 py-1 outline-none focus:outline-none selection:bg-darkPrimary selection:text-lightPrimary text-darkPrimary"
+            className="rounded-lg bg-lightPrimary px-2 py-1 w-full outline-none focus:outline-none selection:bg-darkPrimary selection:text-lightPrimary text-darkPrimary"
             onChange={(e) =>
               setNewTimingRange({ ...newTimingRange, endTime: e.target.value })
             }

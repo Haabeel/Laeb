@@ -121,7 +121,7 @@ const Page = ({ params }: { params: { partner: string } }) => {
   };
 
   return (
-    <div className="flex justify-between items-center gap-32 bg-night w-full h-full py-16 px-32">
+    <div className="flex xl:flex-row flex-col xl:justify-between xl:items-center lg:gap-32 gap-10 bg-night w-full h-full md:py-16 md:px-32 px-10 py-5 overflow-x-hidden overflow-y-auto">
       <div className="flex flex-col justify-start h-full items-start gap-5">
         <section className="flex gap-3 items-center">
           <div
@@ -149,7 +149,7 @@ const Page = ({ params }: { params: { partner: string } }) => {
             {partner?.companyName}
           </p>
         </section>
-        <section className="flex flex-col gap-3 w-[30rem] max-h-96">
+        <section className="flex flex-col gap-3 lg:w-[30rem] w-full max-h-96">
           <section className="flex justify-between items-center">
             <p className="text-2xl text-white text-bold">About Us</p>
             {user?.isAuth && user?.isPartner && (
@@ -196,7 +196,7 @@ const Page = ({ params }: { params: { partner: string } }) => {
             </ul>
           </section>
         )}
-        <section className="flex flex-col gap-2 h-1/4 justify-center items-start w-full self-end">
+        <section className="flex flex-col gap-2 lg:h-1/4 h-full justify-center items-start w-full self-end">
           <p className="text-2xl text-white text-bold">Contact Us</p>
           <div
             className={`flex flex-col justify-center items-start gap-2 rounded-lg p-3 bg-ebony ${
@@ -216,7 +216,7 @@ const Page = ({ params }: { params: { partner: string } }) => {
           </div>
         </section>
       </div>
-      <div className="flex flex-col w-full h-full gap-4">
+      <div className="flex flex-col w-full h-full gap-4 lg:mt-0">
         <section className="flex flex-col justify-center items-center gap-3 h-full w-full pt-5">
           <h3 className="text-white text-2xl font-bold w-full text-center">
             Open Listings
@@ -225,9 +225,9 @@ const Page = ({ params }: { params: { partner: string } }) => {
             <div
               className={`w-full ${
                 listings.length > 1
-                  ? `grid grid-cols-2 gap-3`
+                  ? `grid md:grid-cols-2 grid-cols-1 gap-3`
                   : "flex justify-start items-center"
-              } w-full h-full rounded-lg p-3 overflow-x-hidden overflow-y-auto sticky-container ${
+              } w-full h-full rounded-lg p-3 lg:overflow-x-hidden lg:overflow-y-auto sticky-container ${
                 !partner && "animate-pulse bg-ebony h-[90%]"
               } ${listings.length === 0 && "bg-ebony"}`}
             >

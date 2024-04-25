@@ -53,7 +53,7 @@ const DropdownMenu = ({
     >
       <button
         className={cn(
-          "bg-darkPrimary rounded-lg w-full flex gap-3 px-2 py-1 justify-between items-center text-lg text-lightPrimary",
+          "bg-darkPrimary rounded-lg w-full flex gap-3 px-2 py-1 justify-between items-center text-base sm:text-lg text-lightPrimary",
           buttonClassName
         )}
         type="button"

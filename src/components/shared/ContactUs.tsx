@@ -34,8 +34,10 @@ const ContactUs = () => {
     },
   ];
   return (
-    <section className={`flex justify-stretch gap-60 mx-auto`}>
-      <section className={`flex flex-col gap-5 w-[38.333333%]`}>
+    <section
+      className={`flex sm:flex-row flex-col justify-stretch lg:gap-60 gap-5 lg:mx-auto mx-5`}
+    >
+      <section className={`flex flex-col gap-5 lg:w-[38.333333%] w-full`}>
         <h3 className={`text-2xl text-[#FFFFFF]`}>Contact us</h3>
         <p className={`text-lg text-[#FFFFFF]`}>
           Fill up the form and our team will revert back to you soon! <br />
@@ -102,7 +104,7 @@ const ContactUsForm = () => {
   };
   return (
     <form
-      className={`bg-darkSecondary rounded-2xl p-6 flex flex-col gap-4 w-[35%]`}
+      className={`bg-darkSecondary rounded-2xl p-6 flex flex-col gap-4 sm:w-full lg:w-[35%] w-full`}
       onSubmit={handleSubmit(onSubmit)}
     >
       <section>

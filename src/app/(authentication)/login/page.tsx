@@ -24,7 +24,7 @@ import {
 import { FirebaseError } from "firebase/app";
 import { Toaster, toast } from "sonner";
 import { cookies } from "next/headers";
-import { setUpCookies } from "@/lib/utils";
+import { handleGoogleSignIn, setUpCookies } from "@/lib/utils";
 import {
   collection,
   doc,
@@ -92,56 +92,7 @@ const Login = () => {
         toast.error("An error occurred during login. Please try again later.");
     }
   };
-  const handleGoogleSignIn = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      const signInResult = await signInWithPopup(auth, provider);
 
-      if (signInResult.user) {
-        const user = signInResult.user;
-        const userId = user.uid;
-
-        const userDocRef = doc(db, "users", userId);
-        const userDocSnapshot = await getDoc(userDocRef);
-
-        if (userDocSnapshot.exists()) {
-          // User document exists, proceed with sign in
-          setUpCookies(signInResult, false);
-          router.push("/dashboard");
-        } else {
-          const docRef = doc(db, "partners", userId);
-          const docSnapshot = await getDoc(docRef);
-          if (docSnapshot.exists()) {
-            setUpCookies(signInResult, true);
-            router.push("/partner/dashboard");
-          } else {
-            const userData = {
-              firstName: user.displayName?.split(" ")[0] || "",
-              lastName: user.displayName?.split(" ")[1] || "",
-              email: user.email || "",
-              phoneNumber: null,
-              emailSubscription: false,
-              preferredEmirate: null,
-              preferredDistrict: null,
-            };
-
-            await setDoc(userDocRef, userData);
-
-            setUpCookies(signInResult, false);
-            router.push("/dashboard");
-          }
-          // User document doesn't exist, create a new one
-        }
-      } else {
-        // Handle error if user is null
-        console.error("User is null");
-        toast.error("Sign in failed. Please try again.");
-      }
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "An error occurred. Please try again.");
-    }
-  };
   const handleFacebookSignIn = async () => {
     try {
       const provider = new FacebookAuthProvider();
@@ -262,7 +213,7 @@ const Login = () => {
   const registerText = "Don't have an account?";
   return (
     <div
-      className={`flex flex-col justify-center items-center gap-3 w-screen h-screen bg-darkPrimary`}
+      className={`flex flex-col justify-center items-center gap-3 w-screen h-screen px-5 py-5 bg-darkPrimary`}
     >
       <form
         className={`bg-lightAccent gap-4 rounded-3xl px-8 py-6 flex flex-col justify-center items-center`}
@@ -324,7 +275,7 @@ const Login = () => {
           <button
             className={`flex col-span-3 gap-2 py-2 px-3 rounded-lg bg-[#FFFFFF] items-center justify-center`}
             type="button"
-            onClick={() => handleGoogleSignIn()}
+            onClick={() => handleGoogleSignIn(router)}
           >
             <FcGoogle className={`h-5 w-5`} />
             <p className={`text-sm text-[#000000] font-semibold`}>

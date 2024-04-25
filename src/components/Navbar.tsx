@@ -39,7 +39,7 @@ const Navbar = ({
         alt="logo"
         className={`object-fill w-auto h-full`}
       />
-      <div className={`flex items-center gap-3 mr-5`}>
+      <div className={`items-center gap-3 mr-5 hidden sm:flex`}>
         {link == "/login" && (
           <Link
             href={"/partner"}

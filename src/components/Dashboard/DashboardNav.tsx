@@ -19,7 +19,7 @@ const DashboardNav = ({
   return (
     <nav
       className={cn(
-        "flex gap-10 justify-center items-center text-xl",
+        "flex sm:gap-10 gap-5 justify-center items-center sm:text-xl text-base",
         className
       )}
     >

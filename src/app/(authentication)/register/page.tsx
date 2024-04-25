@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import {
+  GoogleAuthProvider,
   IdTokenResult,
   createUserWithEmailAndPassword,
   updatePhoneNumber,
@@ -22,6 +23,9 @@ import { toast, Toaster } from "sonner";
 import { doc, setDoc } from "firebase/firestore";
 import Cookies from "js-cookie";
 import { ROUTES_VERIFICATION_EMAIL } from "../../../../routes";
+import Logo from "@/assets/images/logo-nobg.png";
+import Image from "next/image";
+import { handleGoogleSignIn } from "@/lib/utils";
 const bebasNeue = Bebas_Neue({
   weight: "400",
   subsets: ["latin"],
@@ -101,14 +105,14 @@ const RegistrationForm = () => {
   };
   return (
     <div
-      className={`flex flex-col justify-center items-center gap-3 w-screen h-screen bg-darkPrimary`}
+      className={`flex flex-col justify-center items-center gap-3 w-screen h-screen px-5 py-3 sm:px-0 bg-darkPrimary`}
     >
       <form
-        className={`bg-lightAccent gap-4 rounded-md px-8 py-6 flex flex-col justify-center items-center`}
+        className={`bg-lightAccent sm:gap-4 gap-2 rounded-md sm:px-8 px-4 sm:py-6 py-3 flex flex-col justify-center items-center`}
         onSubmit={handleSubmit(onSubmit)}
       >
         <h1 className={`text-5xl mb-5 ${bebasNeue.className}`}>Register</h1>
-        <section className={`grid grid-cols-2 gap-x-10 w-full`}>
+        <section className={`grid grid-cols-2 sm:gap-x-10 gap-x-5 w-full`}>
           <label htmlFor="firstName" className={`text-[#000000]`}>
             First Name
           </label>
@@ -222,6 +226,9 @@ const RegistrationForm = () => {
         </button>
         <section className="gap-5 w-full">
           <button
+            onClick={() => {
+              handleGoogleSignIn(router);
+            }}
             className={`flex gap-2 py-2 px-3 rounded-lg w-full bg-[#FFFFFF] items-center justify-center`}
             type="button"
           >

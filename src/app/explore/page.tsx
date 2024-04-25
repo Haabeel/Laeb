@@ -33,6 +33,8 @@ import { BsCalendar, BsSearch } from "react-icons/bs";
 import { getPriceRange } from "@/lib/utils";
 import { FaLocationDot, FaMoneyBill } from "react-icons/fa6";
 import Field from "@/components/shared/Field";
+import { LiaFilterSolid } from "react-icons/lia";
+import { IoClose } from "react-icons/io5";
 
 const Explore = () => {
   const [pUser, setPUser] = useState<pageUser | null>(null);
@@ -55,6 +57,7 @@ const Explore = () => {
   const [listing, setListing] = useState<Listing[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [previousListings, setPreviousListings] = useState<Listing[]>([]);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const getSports = async () => {
@@ -316,17 +319,181 @@ const Explore = () => {
     <div
       className={`bg-darkPrimary flex flex-col justify-center items-center min-w-screen min-h-screen h-full overflow-x-hidden overflow-y-auto gap-3 pt-[12vh]`}
     >
-      <nav className="flex p-5 items-center justify-between h-[12vh] w-full fixed z-[9999] top-0 bg-ebony">
-        <Link href={ROUTES_HOME} className="h-full overflow-hidden">
+      {open && (
+        <section
+          className="lg:hidden flex flex-col pt-[13vh] overflow-y-auto
+        justify-start items-start gap-2.5 md:w-fit text-darkPrimary rounded-lg p-5 bg-lightAccent w-full inset-0 absolute z-[9999]"
+        >
+          <div className="text-3xl text-darkPrimary font-bold w-full flex items-center justify-between">
+            <p>Filters</p>
+            <IoClose onClick={() => setOpen(false)} />
+          </div>
+          <Section>
+            <h2 className="text-lg font-bold">Sport</h2>
+            <DropdownMenu
+              data={selectedSport}
+              dataSet={sports ?? []}
+              defaultText="Sports"
+              setData={setSelectedSport}
+              placeholder="No Sports Available"
+              hasSearch
+              className="w-full"
+              buttonClassName="text-base"
+            />
+            <DropdownMenu
+              data={category}
+              setData={setCategory}
+              dataSet={dbCategories}
+              defaultText="Categories"
+              hasSearch
+              placeholder="No Categories Available"
+              buttonClassName="text-base"
+            />
+            {categories.length > 0 && (
+              <div
+                className={`grid w-full gap-1 ${
+                  categories.length === 2
+                    ? "grid-cols-2"
+                    : categories.length === 1
+                    ? "grid-cols-1"
+                    : "grid-cols-3"
+                }`}
+              >
+                {categories.map((category, index) => (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      const newCategories = categories.filter(
+                        (cat) => cat !== category
+                      );
+                      setCategories(newCategories);
+                    }}
+                    className={`bg-darkPrimary text-lightPrimary p-1 w-full flex items-center justify-center text-xs rounded-md relative after:absolute hover:after:inset-0 hover:after:h-full hover:after:w-full after:text-white after:bg-capuut after:rounded-md after:transition-all after:duration-700 after:ease-in-out hover:after:content-['Delete'] after:flex after:justify-center after:items-center`}
+                  >
+                    <p className="text-center">{category}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Section>
+          <Section>
+            <h2 className="text-lg font-bold">Location</h2>
+            <DropdownMenu
+              data={selectedEmirate}
+              dataSet={Object.keys(emiratesData)}
+              defaultText="Emirates"
+              setData={setSelectedEmirate}
+              hasSearch
+              className="w-full"
+              buttonClassName="text-base"
+            />
+            <DropdownMenu
+              data={selectedCity}
+              dataSet={
+                selectedEmirate ? emiratesData[selectedEmirate]?.districts : []
+              }
+              defaultText="Cities"
+              setData={setSelectedCity}
+              hasSearch
+              className="w-full"
+              placeholder="Select an Emirate"
+              buttonClassName="text-base"
+            />
+          </Section>
+          <Section>
+            <h2 className="text-lg font-bold">Date</h2>
+            <Calendar
+              mode="single"
+              onSelect={(date) => setDate(date)}
+              selected={date}
+              disabled={{
+                before: new Date(),
+              }}
+              className="bg-darkPrimary rounded-md text-white"
+              classNames={{
+                day_disabled: "text-gray-400",
+                head_cell: "text-white w-full text-sm font-normal",
+                day_selected: "bg-lightPrimary text-darkPrimary",
+                day_today: "",
+              }}
+            />
+          </Section>
+          <Section>
+            <h2 className="text-lg font-bold">Price</h2>
+            <div className="flex flex-col gap-2 justify-between items-center w-full text-sm">
+              <section className="flex flex-col gap-1 items-center justify-center w-full">
+                <label htmlFor="minPrice" className="w-full">
+                  Min Price
+                </label>
+                <input
+                  type="number"
+                  id="minPrice"
+                  value={price.min}
+                  onChange={(e) => {
+                    if (parseInt(e.target.value) < 0) return;
+                    setPrice({ ...price, min: e.target.value });
+                  }}
+                  placeholder="AED"
+                  className="w-full p-2 border border-darkPrimary rounded-md outline-none focus:outline-none"
+                />
+              </section>
+              <section className="flex flex-col gap-1 items-center justify-center w-full">
+                <label htmlFor="maxPrice" className="w-full">
+                  Max Price
+                </label>
+                <input
+                  type="number"
+                  id="maxPrice"
+                  value={price.max}
+                  onChange={(e) => {
+                    if (parseInt(e.target.value) < 0) return;
+                    setPrice({ ...price, max: e.target.value });
+                  }}
+                  placeholder="AED"
+                  className="w-full p-2 border border-darkPrimary rounded-md outline-none focus:outline-none"
+                />
+              </section>
+            </div>
+          </Section>
+          <button
+            onClick={() => {
+              setOpen(false);
+              fetchFilteredListings(
+                selectedSport,
+                selectedEmirate,
+                selectedCity,
+                date,
+                price.min !== "" ? parseInt(price.min) : undefined,
+                price.max !== "" ? parseInt(price.max) : undefined,
+                categories.length > 0 ? categories : null
+              );
+            }}
+            className="bg-darkPrimary w-full py-2 text-white font-bold text-sm rounded-md"
+          >
+            Apply Filters
+          </button>
+          <button
+            onClick={() => clearFilters()}
+            className="bg-capuut w-full py-2 text-white font-bold text-sm rounded-md"
+          >
+            Clear Filters
+          </button>
+        </section>
+      )}
+      <nav className="flex p-5 items-center justify-between gap-5 h-[12vh] w-full fixed z-[9999] top-0 bg-ebony">
+        <Link
+          href={ROUTES_HOME}
+          className="h-full overflow-hidden flex items-center justify-center"
+        >
           <Image
             src={Logo}
             height={500}
             width={1000}
             alt="logo"
-            className="object-cover h-full w-auto"
+            className="object-cover sm:h-full sm:w-auto h-auto w-full"
           />
         </Link>
-        <section className="flex bg-lightPrimary text-darkPrimary gap-1 items-center rounded-md absolute left-1/2 transform -translate-x-1/2 px-3">
+        <section className="bg-lightPrimary text-darkPrimary gap-1 items-center rounded-md absolute left-1/2 transform -translate-x-1/2 px-3 lg:flex hidden ">
           <input
             id="search"
             type="text"
@@ -342,7 +509,7 @@ const Explore = () => {
         </section>
         <section className="flex items-center justify-center gap-6 h-full">
           <Link
-            className={`bg-darkPrimary w-48 text-center h-full flex items-center justify-center text-white text-lg rounded-md hover:bg-lightPrimary hover:text-ebony font-semibold tracking-wide ${
+            className={`bg-darkPrimary sm:w-48 w-fit px-3 py-2 text-center h-full flex items-center justify-center text-white text-lg rounded-md hover:bg-lightPrimary hover:text-ebony font-semibold tracking-wide ${
               !pUser && "animate-pulse pointer-events-none"
             }`}
             href={
@@ -359,8 +526,23 @@ const Explore = () => {
           </Link>
         </section>
       </nav>
-      <div className="w-full h-full flex items-start justify-between shadow-[inset_-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,255,255,0.15)] px-10 py-10 gap-5">
-        <section className="flex flex-col items-center justify-between gap-2.5 w-[288px] text-darkPrimary rounded-lg p-5 bg-lightAccent">
+      <div className="w-full h-full min-h-[88vh] flex lg:flex-row flex-col items-start justify-between shadow-[inset_-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,255,255,0.15)] px-10 py-10 gap-5">
+        <section className="bg-lightPrimary text-darkPrimary gap-1 items-center rounded-md px-3 lg:hidden flex w-full">
+          <LiaFilterSolid onClick={() => setOpen(!open)} className="w-8 h-8" />
+          <input
+            id="search"
+            type="text"
+            autoComplete="off"
+            value={search}
+            onChange={(e) => handleSearchInputChange(e)}
+            placeholder="Search"
+            className="w-full py-2 border rounded-md outline-none bg-inherit focus:outline-none"
+          />
+          <label htmlFor="search">
+            <BsSearch className="w-5 h-5" />
+          </label>
+        </section>
+        <section className="lg:flex hidden flex-col items-center justify-between gap-2.5 w-[288px] text-darkPrimary rounded-lg p-5 bg-lightAccent">
           <h1 className="text-3xl text-darkPrimary font-bold">Filters</h1>
           <Section>
             <h2 className="text-lg font-bold">Sport</h2>
@@ -512,7 +694,7 @@ const Explore = () => {
             Clear Filters
           </button>
         </section>
-        <section className="grid grid-cols-3 w-full gap-5">
+        <section className="xl:grid-cols-3 xl:grid md:grid md:grid-cols-2 justify-start items-start flex flex-col w-full gap-5">
           {listing.length !== 0 &&
             listing.map((item, index) => (
               <div

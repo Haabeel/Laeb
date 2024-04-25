@@ -16,9 +16,10 @@ import { Toaster, toast } from "sonner";
 import Logo from "@/assets/images/logo-nobg.png";
 import Image from "next/image";
 import Link from "next/link";
-import { FaLocationDot } from "react-icons/fa6";
+import { FaBurger, FaLocationDot } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { FaPhoneAlt } from "react-icons/fa";
+import { motion } from "framer-motion";
 import {
   ROUTES_DASHBOARD,
   ROUTES_EXPLORE,
@@ -51,6 +52,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { RxHamburgerMenu } from "react-icons/rx";
 
 const cardFormSchema = z.object({
   cardHolder: z.string().min(3, "Name is too short"),
@@ -69,6 +71,7 @@ const List = ({ params }: { params: { list: string } }) => {
   const [date, setDate] = useState<Date>();
   const [paymentOptions, setPaymentOptions] = useState<"card" | "cash">("card");
   const [loading, setLoading] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const {
     register,
     handleSubmit,
@@ -214,8 +217,8 @@ const List = ({ params }: { params: { list: string } }) => {
           partner.companyPhoneNumber,
         listingPrice: timing.price.toString(),
         listingTime: `${timing.startTime} - ${timing.endTime}`,
-        listingUrl: `http://localhost:3000/explore/${listingId}`,
-        partnerPage: `http://localhost:3000/partner/${partner.id}`,
+        listingUrl: `https://laebuae@gmail.com/explore/${listingId}`,
+        partnerPage: `https://laebuae@gmail.com/partner/${partner.id}`,
         paymentMethod: paymentOptions,
         recieptID: "123456",
         userName: pUser.user.displayName ?? pUser.user.email ?? "User",
@@ -229,15 +232,20 @@ const List = ({ params }: { params: { list: string } }) => {
           authKey: `${process.env.NEXT_PUBLIC_ADMIN_USERNAME}:${process.env.NEXT_PUBLIC_ADMIN_PASSWORD}`,
         },
         body: JSON.stringify(body),
-      }).then(() => {
-        toast.success(
-          "Booking successful; Receipt has been sent to your email account."
-        );
-        setListing((prev) => {
-          if (!prev) return prev;
-          return { ...prev, dates: newDates };
+      })
+        .then((res) => {
+          console.log(res.json());
+          toast.success(
+            "Booking successful; Receipt has been sent to your email account."
+          );
+          setListing((prev) => {
+            if (!prev) return prev;
+            return { ...prev, dates: newDates };
+          });
+        })
+        .catch((error) => {
+          toast.error("Error sending receipt");
         });
-      });
     } catch (error) {
       toast.error("Error booking");
       console.log(error);
@@ -319,7 +327,13 @@ const List = ({ params }: { params: { list: string } }) => {
             className="object-cover h-full w-auto"
           />
         </Link>
-        <section className="flex items-center justify-center gap-6 h-full">
+        <section>
+          <RxHamburgerMenu
+            onClick={() => setDrawerOpen(!drawerOpen)}
+            className="md:hidden w-8 h-8 text-lightPrimary"
+          />
+        </section>
+        <section className="hidden items-center justify-center md:flex gap-6 h-full">
           <Link
             href={ROUTES_EXPLORE}
             className="bg-ebony w-48 text-center h-full flex items-center justify-center text-white text-lg rounded-md hover:bg-lightPrimary hover:text-ebony font-semibold tracking-wide"
@@ -354,7 +368,38 @@ const List = ({ params }: { params: { list: string } }) => {
           No listing found with this ID
         </div>
       ) : (
-        <div className="w-full h-full flex flex-col gap-5 pt-2 items-center justify-center shadow-[inset_-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,255,255,0.15)] overflow-hidden px-28">
+        <div className="w-full h-full flex flex-col gap-5 pt-2 items-center justify-center shadow-[inset_-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,255,255,0.15)] overflow-hidden xl:px-28 lg:px-20 px-5 relative">
+          {drawerOpen && (
+            <section className="absolute inset-0 w-full h-min p-5 items-center justify-center gap-3 flex flex-col sm:hidden bg-ebony">
+              <Link
+                href={ROUTES_EXPLORE}
+                className="bg-darkPrimary w-48 text-center h-full flex items-center justify-center text-white text-lg rounded-md hover:bg-lightPrimary hover:text-ebony font-semibold tracking-wide px-3 py-2"
+              >
+                Explore
+              </Link>
+              {pUser ? (
+                <Link
+                  className="bg-darkPrimary w-48 text-center h-full flex items-center justify-center text-white text-lg rounded-md hover:bg-lightPrimary hover:text-ebony font-semibold tracking-wide px-3 py-2"
+                  href={
+                    pUser.isAuth
+                      ? pUser.isPartner
+                        ? ROUTES_PARTNER_DASHBOARD
+                        : ROUTES_DASHBOARD
+                      : ROUTES_LOGIN
+                  }
+                >
+                  {pUser.isAuth ? "Dashboard" : "Login"}
+                </Link>
+              ) : (
+                <Link
+                  href={ROUTES_LOGIN}
+                  className="bg-darkPrimary w-48 text-center h-full flex items-center justify-center text-white text-lg rounded-md hover:bg-lightPrimary hover:text-ebony font-semibold tracking-wide px-3 py-2"
+                >
+                  Login
+                </Link>
+              )}
+            </section>
+          )}
           <section className="flex flex-col gap-1 w-full">
             <h1 className="text-3xl text-lightPrimary font-semibold tracking-wider w-full">
               {listing.name}
@@ -366,7 +411,7 @@ const List = ({ params }: { params: { list: string } }) => {
               </h2>
             </span>
           </section>
-          <section className="grid grid-cols-2 gap-x-14 w-full h-full overflow-hidden">
+          <section className="md:grid md:grid-cols-2 md:gap-x-14 flex flex-col gap-10 w-full h-full overflow-hidden">
             <p className="text-lg text-lightAccent border border-lightAccent px-2 py-1 rounded-md col-span-2 w-min self-start mb-2">
               {listing.sport}
             </p>
@@ -387,7 +432,7 @@ const List = ({ params }: { params: { list: string } }) => {
                   </span>
                 </div>
                 {partner && partner.contactInfo && (
-                  <div className="grid grid-cols-2 gap-1 w-full place-content-center">
+                  <div className="xl:grid xl:grid-cols-2 flex flex-col gap-1 w-full lg:place-content-center">
                     {partner.contactInfo.map((contact, index) => (
                       <div
                         key={index}
@@ -433,7 +478,7 @@ const List = ({ params }: { params: { list: string } }) => {
               <h2 className="text-2xl text-lightPrimary font-semibold w-full text-center">
                 Book The venue
               </h2>
-              <div className="h-full w-full flex items-center justify-center gap-3">
+              <div className="h-full w-full flex xl:flex-row flex-col items-center justify-center gap-3">
                 <section className="flex flex-col gap-2 items-center justify-center w-full self-start">
                   <h3 className="text-xl text-lightPrimary">Select a date</h3>
                   <Calendar
@@ -449,9 +494,9 @@ const List = ({ params }: { params: { list: string } }) => {
                     className="border border-ebony rounded-lg bg-darkPrimary"
                     classNames={{
                       table: "w-full h-full",
-                      cell: "w-16 h-16 text-xl flex items-center justify-center",
+                      cell: "md:w-16 md:h-16 w-10 h-10 text-lg flex items-center justify-center",
                       head_cell:
-                        "w-16 h-16 text-xl flex items-center justify-center",
+                        "md:w-16 md:h-16 w-10 h-10 text-lg flex items-center justify-center",
                       button: "w-full h-full",
                       nav_button_next: "absolute right-1 w-min h-min",
                       nav_button_previous: "absolute left-1 w-min h-min",
@@ -473,7 +518,7 @@ const List = ({ params }: { params: { list: string } }) => {
                   <h3 className="text-xl text-lightPrimary col-span-6">
                     Select the Time
                   </h3>
-                  <div className="grid grid-cols-6 gap-2 w-full">
+                  <div className="grid sm:grid-cols-6 grid-cols-4 gap-2 w-full">
                     {listing.dates
                       .find((d) => isSameDay(date ?? new Date(), d.date))
                       ?.timings.map((timing, index) => {

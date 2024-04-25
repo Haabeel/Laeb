@@ -102,11 +102,14 @@ const AccountInformation = () => {
   }, [user]);
 
   return (
-    <main className="flex justify-center items-start w-full h-full gap-20 relative shadow-[inset_-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,255,255,0.15)] py-10">
+    <main className="flex flex-col sm:flex-row justify-center items-start w-full h-full gap-10 sm:gap-20 px-5 relative shadow-[inset_-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,255,255,0.15)] py-10">
       <section className="flex flex-col gap-5 justify-center items-center">
         <H2>Your Profile</H2>
-        <section className="flex gap-4 w-full justify-between items-center">
-          <label htmlFor="FirstName" className="text-white text-xl text-medium">
+        <section className="flex sm:flex-row flex-col gap-2 sm:gap-4 w-full sm:items-center items-start sm:justify-between justify-start">
+          <label
+            htmlFor="FirstName"
+            className="text-white text-lg sm:text-xl text-medium"
+          >
             First Name
           </label>
           <AccountInformationInput
@@ -116,10 +119,14 @@ const AccountInformation = () => {
             editable
             setData={setFirstName}
             setNeedsUpdate={setNeedsUpdate}
+            className="w-full sm:w-[20rem] text-base sm:text-xl"
           />
         </section>
-        <section className="flex gap-4 w-full justify-between items-center">
-          <label htmlFor="LastName" className="text-white text-xl text-medium">
+        <section className="flex sm:flex-row flex-col gap-2 sm:gap-4 w-full sm:items-center items-start sm:justify-between justify-start">
+          <label
+            htmlFor="LastName"
+            className="text-white text-lg sm:text-xl text-medium"
+          >
             Last Name
           </label>
           <AccountInformationInput
@@ -129,10 +136,14 @@ const AccountInformation = () => {
             editable
             setData={setLastName}
             setNeedsUpdate={setNeedsUpdate}
+            className="w-full sm:w-[20rem] text-base sm:text-xl"
           />
         </section>
-        <section className="flex gap-4 justify-between w-full items-center">
-          <label htmlFor="email" className="text-white text-xl text-medium">
+        <section className="flex sm:flex-row flex-col gap-2 sm:gap-4 w-full sm:items-center items-start sm:justify-between justify-start">
+          <label
+            htmlFor="email"
+            className="text-white text-lg sm:text-xl text-medium"
+          >
             Email
           </label>
           <AccountInformationInput
@@ -140,12 +151,13 @@ const AccountInformation = () => {
             fieldName="email"
             user={user!!}
             setNeedsUpdate={setNeedsUpdate}
+            className="w-full sm:w-[20rem] text-base sm:text-xl"
           />
         </section>
-        <section className="flex gap-4 justify-between w-full items-center">
+        <section className="flex sm:flex-row flex-col gap-2 sm:gap-4 w-full sm:items-center items-start sm:justify-between justify-start">
           <label
             htmlFor="phoneNumber"
-            className="text-white text-xl text-medium"
+            className="text-white text-lg sm:text-xl text-medium"
           >
             Phone Number
           </label>
@@ -154,6 +166,7 @@ const AccountInformation = () => {
             fieldName="phoneNumber"
             user={user!!}
             setNeedsUpdate={setNeedsUpdate}
+            className="w-full sm:w-[20rem] text-base sm:text-xl"
           />
         </section>
         {needsUpdate && (
@@ -262,7 +275,7 @@ const Bookings = ({ bookings }: { bookings: Booking[] | undefined }) => {
   }, [listings]);
 
   return (
-    <section className="flex flex-col w-[45rem] gap-5 justify-center items-center h-full">
+    <section className="flex flex-col sm:w-[45rem] w-full gap-5 justify-center items-center h-full">
       <H2>Bookings</H2>
       <DashboardNav
         activeTab={bookingTab}
@@ -272,7 +285,7 @@ const Bookings = ({ bookings }: { bookings: Booking[] | undefined }) => {
       />
       {bookingTab == "Upcoming Bookings" && (
         <section
-          className={`grid grid-cols-2 gap-x-3 gap-y-3 w-full h-full overflow-y-auto rounded-md bookings-container`}
+          className={`grid grid-cols-1 sm:grid-cols-2 sm:gap-x-3 gap-y-3 w-full h-full overflow-y-auto rounded-md bookings-container`}
         >
           {upcomingBookings.map((booking, idx) => {
             if (!listings) return null; // Handle missing listings (loading state
@@ -306,7 +319,10 @@ const Bookings = ({ bookings }: { bookings: Booking[] | undefined }) => {
             [1, 2, 3, 4].map((idx) => (
               <section
                 key={idx}
-                className="flex flex-col justify-center items-center gap-3 bg-lightPrimary rounded-lg w-full h-[55vh] animate-pulse  px-4 py-4"
+                className="flex flex-col justify-center items-center gap-3 bg-lightPrimary rounded-lg w-full h-[55vh] animate-pulse px-4 py-4"
+                style={{
+                  display: upcomingBookings.length === 0 ? "none" : "flex",
+                }}
               />
             ))}
           {upcomingBookings.length == 0 && (
@@ -351,8 +367,16 @@ const Bookings = ({ bookings }: { bookings: Booking[] | undefined }) => {
               <section
                 key={idx}
                 className="flex flex-col justify-center items-center gap-3 bg-lightPrimary rounded-lg w-full h-[55vh] animate-pulse  px-4 py-4"
+                style={{
+                  display: pastBookings.length === 0 ? "none" : "flex",
+                }}
               />
             ))}
+          {pastBookings.length == 0 && (
+            <p className="text-white text-3xl w-full col-span-2 text-center my-20">
+              No Past bookings
+            </p>
+          )}
         </section>
       )}
       <Link
@@ -387,7 +411,7 @@ const BookingCard = ({
   return (
     <Link
       href={url}
-      className="flex flex-col justify-between items-start gap-3 bg-lightPrimary rounded-lg w-full h-[55vh] px-4 py-4"
+      className="flex flex-col justify-between items-start gap-3 bg-lightPrimary rounded-lg w-full sm:h-[55vh] px-4 py-4"
     >
       <Image
         src={image}

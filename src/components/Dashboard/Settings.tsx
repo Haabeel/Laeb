@@ -193,7 +193,7 @@ const Settings = () => {
               className="translate-x-1/2 left-[105%]"
             />
           )}
-          <span className="text-xl text-darkPrimary flex gap-3 items-center">
+          <span className="sm:text-xl text-lg text-darkPrimary flex gap-3 items-center">
             <p>Opt in to receive promotional and update emails.</p>
             <Switch
               className="dark:bg-darkPrimary w-11"
@@ -215,7 +215,7 @@ const Settings = () => {
               }}
             />
           </span>
-          <span className="text-xl text-darkPrimary flex gap-3 items-center w-full justify-between">
+          <span className="sm:text-xl text-lg text-darkPrimary flex gap-3 items-center w-full justify-between">
             <p className="w-full">Preferred Emirate</p>
             <DropdownMenu
               data={emirate}
@@ -224,7 +224,7 @@ const Settings = () => {
               defaultText="Emirates"
             />
           </span>
-          <span className="text-xl text-darkPrimary flex gap-3 items-center w-full justify-between">
+          <span className="sm:text-xl text-lg text-darkPrimary flex gap-3 items-center w-full justify-between">
             <p className="w-full">Preferred District</p>
             <DropdownMenu
               data={district}

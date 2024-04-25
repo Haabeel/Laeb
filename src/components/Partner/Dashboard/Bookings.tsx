@@ -40,7 +40,7 @@ const Bookings = ({
   }, [partner]);
 
   return (
-    <div className="grid grid-cols-2 w-full h-full p-5 gap-5 overflow-hidden">
+    <div className="lg:grid lg:grid-cols-2 flex flex-col items-center justify-center w-full h-full p-5 gap-5 overflow-hidden">
       <Listings
         user={user}
         partner={partner}
@@ -49,6 +49,7 @@ const Bookings = ({
         setListings={setListings}
         loading={loading}
         setLoading={setLoading}
+        selectedListing={selectedListing}
       />
       <EditComponent
         selectedListing={selectedListing}

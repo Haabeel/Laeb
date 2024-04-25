@@ -47,6 +47,7 @@ const AccountInformationInput = ({
         case "firstName":
           return user.displayName?.split(" ")[0] || "";
         case "phoneNumber":
+          console.log(user.phoneNumber);
           return user.phoneNumber
             ? user.phoneNumber.slice(0, 4) + " " + user.phoneNumber.slice(4)
             : "";
@@ -84,7 +85,7 @@ const AccountInformationInput = ({
         onChange={(e) => {
           setValue(e.target.value);
         }}
-        className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none `}
+        className={`px-3 py-2 rounded-md bg-lightPrimary outline-none focus:outline-none w-full`}
         disabled={!isEditing}
         autoComplete="off"
       />

@@ -221,14 +221,17 @@ const List = () => {
 
   return (
     <div className="w-screen h-screen bg-ebony flex flex-col items-center overflow-y-auto overflow-x-hidden">
-      <nav className="flex h-[15%] items-center p-5 justify-between w-full border-b-1 border-neutral-800">
-        <Link href={ROUTES_HOME} className="h-full">
+      <nav className="flex h-[15%] items-center p-5 lg:justify-between gap-5 w-full border-b-1 border-neutral-800">
+        <Link
+          href={ROUTES_HOME}
+          className="h-full items-center justify-center flex"
+        >
           <Image
             src={Logo}
             width={1000}
             height={1000}
             alt="logo"
-            className="object-cover h-full w-auto"
+            className="object-cover lg:h-full lg:w-auto h-auto w-full"
           />
         </Link>
         <Link
@@ -241,12 +244,12 @@ const List = () => {
       <div className="shadow-[inset_-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(255,255,255,0.15)] flex justify-center p-5 w-full">
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-5 p-5 rounded-lg bg-lightAccent items-center shadow-lg transition-all duration-500 ease-in-out w-[50vw]"
+          className="flex flex-col gap-5 p-5 rounded-lg bg-lightAccent items-center xl:w-[50vw] w-full shadow-lg transition-all duration-500 ease-in-out"
         >
           <h1 className={`text-5xl mb-2 ${bebasNeue.className}`}>
             New Listing
           </h1>
-          <section className="flex items-center justify-between gap-14 w-full h-full">
+          <section className="flex xl:flex-row flex-col items-center justify-between xl:gap-14 gap-3 w-full h-full">
             <section className="flex flex-col items-center w-full justify-start gap-4 h-full">
               <FormField
                 label="name"
@@ -280,7 +283,7 @@ const List = () => {
                   defaultText="sport"
                   hasSearch
                   key={"sport"}
-                  className="min-w-[20rem]"
+                  className="xl:min-w-[20rem] min-w-full"
                   addNew
                   handleAddNewButtonClick={handleAddNewSportClick}
                 />

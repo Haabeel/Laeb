@@ -12,7 +12,7 @@ import runningTrackAdults from "@/assets/images/runningTrackAdults.jpg";
 
 const MovingGrid = () => {
   return (
-    <div className={`flex flex-col flex-[2.5] gap-4 w-[90%]`}>
+    <div className={`lg:flex hidden flex-col flex-[2.5] gap-4 w-[90%]`}>
       <InfiniteMovingCards
         items={[
           { src: cricket.src },

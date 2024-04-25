@@ -31,7 +31,7 @@ const Dashboard = () => {
     return () => unsubscribe();
   }, []);
   return (
-    <div className="bg-darkPrimary min-h-screen h-full min-w-max flex flex-col overflow-x-hidden overflow-y-auto items-center">
+    <div className="bg-darkPrimary min-h-screen h-full lg:min-w-max  flex flex-col overflow-x-hidden overflow-y-auto items-center">
       <div className="flex items-center justify-between w-full h-[12%] px-4 py-4">
         <Link href={"/"} className="h-full">
           <Image

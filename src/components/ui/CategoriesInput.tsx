@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import DropdownMenu from "../shared/DropdownMenu";
 import { cn } from "@/utility";
+import { Cross1Icon } from "@radix-ui/react-icons";
 
 type CategoriesInputProps = {
   dbCategories: string[];
@@ -107,9 +108,10 @@ const CategoriesInput = ({
           <div
             key={index}
             onClick={() => removeCategory(index)}
-            className="bg-lightPrimary text-darkPrimary w-full px-3 py-2 text-sm rounded-md text-center relative after:absolute hover:after:inset-0 hover:after:h-full hover:after:w-full after:text-white after:bg-capuut after:rounded-md after:transition-all after:duration-700 after:ease-in-out hover:after:content-['Delete'] after:flex after:justify-center after:items-center"
+            className="bg-lightPrimary text-darkPrimary w-full px-3 py-2 text-sm rounded-md text-center relative after:absolute hover:after:inset-0 hover:after:h-full hover:after:w-full after:text-white after:bg-capuut after:rounded-md after:transition-all after:duration-700 after:ease-in-out hover:after:content-['Delete'] after:flex after:justify-center after:items-center flex gap-2 items-center justify-center h-full"
           >
             <p>{category}</p>
+            <Cross1Icon className="sm:hidden block" />
           </div>
         ))}
       </section>

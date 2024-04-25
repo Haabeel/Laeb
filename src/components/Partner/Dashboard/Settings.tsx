@@ -124,7 +124,7 @@ const Settings = ({
 
   return (
     <div
-      className={`flex justify-center items-center gap-5 w-full h-full p-5 relative`}
+      className={`flex lg:flex-row flex-col lg:justify-center items-center gap-5 w-full h-full p-5 relative lg:overflow-x-hidden overflow-y-auto overflow-x-hidden`}
     >
       <div className="flex flex-col justify-start items-start gap-5 w-full h-full">
         <div className="flex flex-col justify-stretch items-center w-full bg-ebony px-4 py-3 rounded-lg gap-5 ">
@@ -143,7 +143,7 @@ const Settings = ({
           )}
         </div>
         <div className="flex flex-col w-full justify-start items-center text-white bg-ebony p-5 rounded-lg overflow-x-hidden overflow-y-auto gap-5">
-          <span className="flex justify-between text-lg items-center w-full text-darkPrimary rounded-lg px-3 py-2 bg-lightAccent">
+          <span className="flex justify-between lg:text-lg text-base items-center w-full text-darkPrimary rounded-lg px-3 py-2 bg-lightAccent">
             <p>Receive email notifications for booking details.</p>
             <Switch
               className="dark:bg-darkPrimary w-11"
@@ -171,7 +171,7 @@ const Settings = ({
           </span>
         </div>
       </div>
-      <div className="h-full w-[90%] flex flex-col gap-2 justify-stretch items-center bg-ebony px-4 py-3 rounded-lg text-white">
+      <div className="h-full lg:w-[90%] w-full flex flex-col gap-2 justify-stretch items-center bg-ebony px-4 py-3 rounded-lg text-white">
         <div className="flex items-center justify-center gap-3">
           <MdAccountBox className="w-8 h-8" />
           <div className="text-center text-2xl w-full">
@@ -272,26 +272,26 @@ const AccountTable = ({ data }: { data: User | null }) => {
       <table className="table-auto w-full border-collapse rounded-lg border border-gray-800">
         <thead className="rounded-lg">
           <tr>
-            <th className="border border-gray-800 px-4 py-2">
+            <th className="border border-gray-800 px-4 py-2 lg:text-lg text-base">
               Account Creation Date
             </th>
-            <th className="border border-gray-800 px-4 py-2">
+            <th className="border border-gray-800 px-4 py-2 lg:text-lg text-base">
               Monthly Billing Amount
             </th>
-            <th className="border border-gray-800 px-4 py-2">
+            <th className="border border-gray-800 px-4 py-2 lg:text-lg text-base">
               Next Billing Date
             </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td className="border border-gray-800 px-4 py-2 rounded-lg text-center text-base">
+            <td className="border border-gray-800 px-4 py-2 rounded-lg text-center lg:text-base text-sm">
               {data && creationDate}
             </td>
-            <td className="border border-gray-800 px-4 py-2 rounded-lg text-center text-base">
+            <td className="border border-gray-800 px-4 py-2 rounded-lg text-center lg:text-base text-sm">
               AED {data && billingData}
             </td>
-            <td className="border border-gray-800 px-4 py-2 rounded-lg text-center text-base">
+            <td className="border border-gray-800 px-4 py-2 rounded-lg text-center lg:text-base text-sm">
               {data && nextBillingDate}
             </td>
           </tr>
