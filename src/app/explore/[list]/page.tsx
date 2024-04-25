@@ -220,7 +220,7 @@ const List = ({ params }: { params: { list: string } }) => {
         listingUrl: `https://laebuae@gmail.com/explore/${listingId}`,
         partnerPage: `https://laebuae@gmail.com/partner/${partner.id}`,
         paymentMethod: paymentOptions,
-        recieptID: "123456",
+        recieptID: pUser.user.uid.slice(0, 5),
         userName: pUser.user.displayName ?? pUser.user.email ?? "User",
         to: pUser.user.email!!,
         subject: "Booking Confirmation",
