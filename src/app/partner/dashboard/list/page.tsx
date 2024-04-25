@@ -25,7 +25,15 @@ import {
   MultiImageDropzone,
 } from "@/components/ui/MultiImageDropzone";
 import CategoriesInput from "@/components/ui/CategoriesInput";
-import { addDoc, collection, doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  count,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 import { auth, db } from "../../../../../firebase.config";
 import { ListDate, TimingRange } from "@/types";
 import { DateRange } from "react-day-picker";
@@ -98,12 +106,15 @@ const List = () => {
         };
       });
       const dates: ListDate[] = generateListDates(date, timings);
-
+      if (dates.length === 0) return toast.error("Please add atleast one date");
       await uploadImages().then(async (res) => {
         const collectionRef = collection(db, "listings");
+        const listingsCount = await getDocs(collectionRef);
+        const totalCount = listingsCount.size + 1;
         const listingsDocRef = await addDoc(collectionRef, {
           partnerId: partner.uid,
           ...data,
+          numId: totalCount,
           sport,
           images: res,
           categories,

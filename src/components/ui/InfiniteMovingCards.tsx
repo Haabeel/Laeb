@@ -1,7 +1,9 @@
 "use client";
 
+import { Listing } from "@/types";
 import { cn } from "@/utility";
 import Image from "next/image";
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
 export const InfiniteMovingCards = ({
@@ -10,6 +12,8 @@ export const InfiniteMovingCards = ({
   speed = "fast",
   pauseOnHover = true,
   className,
+  hasListings,
+  listings,
 }: {
   items: {
     src: string;
@@ -18,6 +22,8 @@ export const InfiniteMovingCards = ({
   speed?: "fast" | "normal" | "slow";
   pauseOnHover?: boolean;
   className?: string;
+  hasListings?: boolean;
+  listings?: Listing[];
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const scrollerRef = React.useRef<HTMLUListElement>(null);
@@ -87,20 +93,36 @@ export const InfiniteMovingCards = ({
       >
         {items.map((item, idx) => (
           <li
-            className="max-w-full relative flex-shrink-0"
+            className="max-w-full relative flex-shrink-0 rounded-3xl"
             style={{
               background:
                 "linear-gradient(180deg, var(--slate-800), var(--slate-900)",
             }}
             key={idx}
           >
-            <Image
-              src={item.src}
-              alt="image"
-              width={1200}
-              height={1200}
-              className={`rounded-3xl w-full h-full`}
-            />
+            {hasListings && listings && listings?.length > 0 && (
+              <Link
+                href={`/explore/${listings[idx].id}`}
+                className="w-full rounded-3xl"
+              >
+                <Image
+                  src={item.src}
+                  alt="image"
+                  width={1200}
+                  height={1200}
+                  className={`rounded-3xl w-full h-full`}
+                />
+              </Link>
+            )}
+            {!hasListings && (
+              <Image
+                src={item.src}
+                alt="image"
+                width={1200}
+                height={1200}
+                className={`rounded-3xl w-full h-full`}
+              />
+            )}
           </li>
         ))}
       </ul>

@@ -455,7 +455,7 @@ export const generateListDates = (
   dateRange: DateRange,
   timings: TimingRange[]
 ): ListDate[] => {
-  if (!dateRange.from || !dateRange.to) {
+  if (!dateRange.from) {
     return [];
   }
 
@@ -485,7 +485,11 @@ export const generateListDates = (
     ]);
   };
 
-  return generateListDatesRecursive(dateRange.from, dateRange.to, []);
+  return generateListDatesRecursive(
+    dateRange.from,
+    dateRange.to ?? dateRange.from,
+    []
+  );
 };
 
 export const getPriceRange = (dates: ListDate[]): string => {
@@ -595,3 +599,6 @@ export const handleEditListingButton = async (
     }
   }
 };
+
+export const shuffleList = <T>(list: T[]): T[] =>
+  [...list].sort(() => Math.random() - 0.5);

@@ -125,6 +125,7 @@ const Explore = () => {
         let listings: Listing[] = listingSnapshot.docs.map(
           (doc) => doc.data() as Listing
         );
+        console.log("listings", listings);
         setListing(listings);
         setPreviousListings(listings);
       } catch (error) {

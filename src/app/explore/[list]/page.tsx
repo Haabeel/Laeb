@@ -299,6 +299,10 @@ const List = ({ params }: { params: { list: string } }) => {
   }, [params]);
 
   useEffect(() => {
+    console.log(listing?.dates);
+  }, [listing?.dates]);
+
+  useEffect(() => {
     if (!listing) return;
     const getPartnerDocument = async () => {
       try {
@@ -485,7 +489,10 @@ const List = ({ params }: { params: { list: string } }) => {
                   <Calendar
                     mode="single"
                     disabled={{
-                      before: new Date(),
+                      before:
+                        new Date() === new Date(listing.dates[0].date)
+                          ? new Date()
+                          : new Date(listing.dates[0].date),
                       after: new Date(
                         listing.dates[listing.dates.length - 1].date
                       ),
