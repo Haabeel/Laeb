@@ -48,7 +48,7 @@ export const POST = async (req: NextRequest) => {
         })
       );
       await transporter.sendMail({
-        from: process.env.NEXT_PUBLIC_GMAIL_USER,
+        from: "laebuae@gmail.com",
         to: data.to,
         subject: data.subject,
         html: htmlEmail,
